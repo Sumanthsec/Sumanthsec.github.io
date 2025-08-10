@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crimson Slopes | Vineyard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-logo">Crimson Slopes</div>
+            <div>
+                <a href="index.html">Home</a>
+                <a href="vineyard.html">Vineyard</a>
+                <a href="team.html">Team</a>
+                <a href="#" data-modal-target>Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero" style="background-image: url('IMG_1092.jpeg');">
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>The Vineyard</h1>
+            <p>Discover our terroir, vines, and varietals</p>
+        </div>
+    </div>
+
+    <section class="section fade-in">
+        <h2 class="section-title">Terra Rossa Soil</h2>
+        <p class="section-text">Our terra rossa soil—a vibrant, iron-rich clay—imparts a subtle yet profound influence on the grapes. Renowned in some of the world’s most prestigious wine regions, this soil provides optimal drainage while retaining enough moisture to sustain our vines through warmer periods. Its mineral content, born from ancient geological activity, contributes to the concentration, complexity, and longevity of our wines.</p>
+    </section>
+
+    <section class="section fade-in">
+        <h2 class="section-title">Rolling Hills & Microclimates</h2>
+        <p class="section-text">The gentle slopes of Pilot Hill define our topography. Their varying aspects offer a mosaic of microclimates—allowing precise placement of varietals to maximize sun exposure and mitigate extremes. Cooling breezes flow across the elevated terrain, preserving the grapes’ acidity and delicate aromatics. This natural elevation ensures a balanced fruit profile, avoiding over-ripeness while capturing depth and nuance.</p>
+    </section>
+
+    <section class="section fade-in">
+        <h2 class="section-title">Matured Vines</h2>
+        <p class="section-text">Our vineyard blocks house vines that are decades old, with deep roots intimately connected to the terra rossa. These venerable vines yield fewer clusters, but each berry is rich in flavour, with thicker skins and richer tannins. The resulting wines possess an intense color and remarkable structural integrity, enabling them to age gracefully and evolve over time.</p>
+    </section>
+
+    <section class="section fade-in">
+        <h2 class="section-title">Varietals & Winemaking</h2>
+        <p class="section-text">We cultivate classic Bordeaux varietals: Cabernet Sauvignon, Merlot, Cabernet Franc, Petit Verdot, and Malbec. Each varietal is carefully tended with precise pruning and canopy management. Hand-harvesting at optimal ripeness and rigorous sorting ensure that only the finest fruit makes it to our cellar. The wines emerging from our crimson slopes reveal dark fruits with hints of cedar, tobacco, and subtle minerality. They are balanced, with silky tannins and a lingering finish that speaks of complexity and refinement.</p>
+        <div class="cta-center">
+            <a href="team.html" class="button">Meet Our Team</a>
+        </div>
+    </section>
+
+    <!-- Modal for Contact -->
+    <div class="modal-overlay">
+        <div class="modal">
+            <span class="close-btn">&times;</span>
+            <h2>Contact Us</h2>
+            <form onsubmit="alert('Thank you for your message! We will get back to you soon.'); return false;">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Crimson Slopes. All rights reserved.</p>
+        <div>
+            <a href="index.html">Home</a> |
+            <a href="vineyard.html">Vineyard</a> |
+            <a href="team.html">Team</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

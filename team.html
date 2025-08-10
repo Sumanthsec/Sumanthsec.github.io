@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crimson Slopes | Team</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-logo">Crimson Slopes</div>
+            <div>
+                <a href="index.html">Home</a>
+                <a href="vineyard.html">Vineyard</a>
+                <a href="team.html">Team</a>
+                <a href="#" data-modal-target>Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="hero" style="background-image: url('DJI_0356.jpg');">
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>Our Story & Team</h1>
+            <p>Meet the people behind our passion</p>
+        </div>
+    </div>
+
+    <section class="section fade-in">
+        <h2 class="section-title">Juan's Legacy</h2>
+        <p class="section-text">Juan still remembers the tremor of the earth beneath his feet when the first shovel broke ground. Raised in the vineyards of Chile, he brought his deep-rooted knowledge to the nascent rows of Pilot Hill. Over decades, Juan’s hands have shaped every vine, ensuring that each cluster reaches its full potential. His unwavering dedication is woven into the very character of our exceptional wines.</p>
+    </section>
+
+    <section class="section fade-in">
+        <h2 class="section-title">A Collective Heart</h2>
+        <p class="section-text">Crimson Slopes thrives on a vibrant tapestry of talent and passion. Mateo, born and raised among the vines of Napa Valley, brings generations of vineyard mastery and sustainable practices. Elara, a New Zealand native, infuses her experience crafting nuanced wines from diverse terroirs into our cellar. Alongside them is a broader community of enthusiasts—from seasoned agriculturalists to passionate newcomers—united by their love for the land and the vine. Together, they ensure that every bottle tells a story of exceptional quality born from a collaborative heart.</p>
+    </section>
+
+    <section class="section fade-in">
+        <h2 class="section-title">Get in Touch</h2>
+        <p class="section-text">Whether you have questions about our wines, want to plan a visit, or simply share your experiences, we’d love to hear from you. Click the button below to send us a message.</p>
+        <div class="cta-center">
+            <a href="#" class="button" data-modal-target>Contact Us</a>
+        </div>
+    </section>
+
+    <!-- Modal for Contact -->
+    <div class="modal-overlay">
+        <div class="modal">
+            <span class="close-btn">&times;</span>
+            <h2>Contact Us</h2>
+            <form onsubmit="alert('Thank you for your message! We will get back to you soon.'); return false;">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Crimson Slopes. All rights reserved.</p>
+        <div>
+            <a href="index.html">Home</a> |
+            <a href="vineyard.html">Vineyard</a> |
+            <a href="team.html">Team</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
