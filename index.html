@@ -1,93 +1,72 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safari Wineries | Home</title>
+    <title>Repolyx | Recycled Polymer Hub</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <div>
-                <a href="index.html">Home</a>
-                <a href="vineyard.html">Vineyard</a>
-                <a href="team.html">Team</a>
-                <a href="#" data-modal-target>Contact</a>
-            </div>
+    <header class="site-header">
+        <div class="logo">Repolyx</div>
+        <nav class="main-nav">
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <div class="hero" style="background-image: url('DJI_0356.jpg');">
-        <div class="overlay"></div>
-        <div class="hero-content">
-            <h1>Safari Wineries</h1>
-            <p>Where Terra Rossa Nurtures Bordeaux Excellence</p>
-            <a href="vineyard.html" class="button">Explore the Vineyard</a>
-        </div>
-    </div>
-
-    <!-- Introduction Section -->
-    <section class="section fade-in">
-        <p class="section-text">Nestled amidst rolling hills bathed in golden sunlight, Safari Wineries is a meticulously cultivated estate where ideal terroir, seasoned vines, and unwavering dedication converge to create wines of exceptional character and depth. Here, passion and tradition unite to craft experiences that linger long after the last sip.</p>
-        <div class="features">
-            <div class="feature-card">
-                <h3>Terra Rossa Soil</h3>
-                <p>Our vibrant iron-rich clay provides optimal drainage while retaining just enough moisture to sustain the vines. Its mineral complexity imparts concentration, complexity, and remarkable longevity to our wines.</p>
+    <main>
+        <section class="hero" id="products">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <span class="hero-badge">Background image</span>
+                <h1>Authorized recycled polymer knowledge hub</h1>
+                <p>Static information and guidance to help you select certified recycled polymer solutions.</p>
             </div>
-            <div class="feature-card">
-                <h3>Rolling Hills</h3>
-                <p>The gentle slopes of Pilot Hill offer a mosaic of microclimates, providing ideal sun exposure and cooling breezes. This balance preserves the grapes’ acidity and delicate aromatics, ensuring elegant and balanced wines.</p>
+        </section>
+
+        <section class="info-block fade-in" id="about">
+            <p class="lede">Repolyx curates trusted recycled polymer data, specifications, and sourcing tips so teams can make faster, safer material choices. Explore processes, compliance checkpoints, and field-proven best practices in one concise read.</p>
+        </section>
+
+        <section class="pillars fade-in">
+            <div class="pillar-card">
+                <h3>Traceable supply</h3>
+                <p>Verify inputs, certifications, and end-use suitability before you buy or qualify a polymer.</p>
             </div>
-            <div class="feature-card">
-                <h3>Matured Vines</h3>
-                <p>Deep-rooted vines, some decades old, yield fewer clusters but each berry bursts with concentrated flavor. The resulting wines boast rich tannins, intense colors, and structural integrity that allows them to age gracefully.</p>
+            <div class="pillar-card">
+                <h3>Material clarity</h3>
+                <p>Quick-read overviews on resin grades, processing windows, and performance tradeoffs for recycled feedstock.</p>
             </div>
-        </div>
-    </section>
+            <div class="pillar-card">
+                <h3>Ready-to-use tools</h3>
+                <p>Templates, checklists, and side-by-side comparisons that shorten technical approvals.</p>
+            </div>
+        </section>
 
-    <!-- Decorative Section -->
-    <section class="decor-section fade-in">
-        <div class="overlay">
-            <h2>Experience the Journey</h2>
-            <p>From terra rossa soils to rolling hills and matured vines, every step of our journey is a testament to our dedication. Join us as we continue to explore and honor the land that gives life to our exceptional wines.</p>
-            <a href="vineyard.html" class="button">Learn More</a>
-        </div>
-    </section>
+        <section class="image-grid fade-in">
+            <div class="image-card">
+                <div class="image-label">Image</div>
+            </div>
+            <div class="image-card">
+                <div class="image-label">Image</div>
+            </div>
+        </section>
 
-    <!-- Final Call-to-Action -->
-    <section class="section fade-in">
-        <h2 class="section-title">Meticulous Viticulture</h2>
-        <p class="section-text">We cultivate classic Bordeaux varietals—Cabernet Sauvignon, Merlot, Cabernet Franc, Petit Verdot, and Malbec. Each vine is meticulously tended, hand-harvested at optimal ripeness, and sorted rigorously to ensure only the finest fruit reaches the cellar.</p>
-        <div class="cta-center">
-            <a href="team.html" class="button">Meet the Team</a>
-        </div>
-    </section>
+        <section class="handwritten fade-in" id="contact">
+            <p>Your endless search for authorised recycled polymer ends here!</p>
+            <p>Join us today.</p>
+        </section>
+    </main>
 
-    <!-- Modal for Contact -->
-    <div class="modal-overlay">
-        <div class="modal">
-            <span class="close-btn">&times;</span>
-            <h2>Contact Us</h2>
-            <form onsubmit="alert('Thank you for your message! We will get back to you soon.'); return false;">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <input type="email" name="email" placeholder="Your Email" required>
-                <textarea name="message" placeholder="Your Message" required></textarea>
-                <button type="submit">Send Message</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Safari Wineries. All rights reserved.</p>
-        <div>
-            <a href="index.html">Home</a> |
-            <a href="vineyard.html">Vineyard</a> |
-            <a href="team.html">Team</a>
-        </div>
+    <footer class="site-footer">
+        <span>Repolyx</span>
+        <span class="footer-nav">
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </span>
     </footer>
 
     <script src="script.js"></script>
