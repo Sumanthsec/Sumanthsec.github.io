@@ -489,7 +489,7 @@ await tL(t,'aws cognito-idp get-user --access-token eyJraWQiOi...','cmd',10);
 aL(t,'','out');await dly(400);
 aL(t,sj({Username:e,UserAttributes:[{Name:'sub',Value:'a1b2c3d4-...'},{Name:'email',Value:e},{Name:'custom:access',Value:'user'}]}),'out');
 aL(t,'','out');aL(t,'custom:access = "user" — not admin. Yet.','inf');
-toast('Authenticated — now modify the attribute','info');await dly(1500);cogP(2)}
+toast('Authenticated — ready to modify attribute','info')}
 
 async function cogInj(){
   const a=$('cat').value;const v=$('cav').value.trim()||'admin';
@@ -527,7 +527,7 @@ async function cogInj(){
   aL(t,'aws cognito-idp get-user --access-token eyJ...','cmd');aL(t,'','out');await dly(400);
   aL(t,sj({UserAttributes:[{Name:'custom:access',Value:'admin'},{Name:'email',Value:'attacker@example.com'}]}),'out');
   aL(t,'','out');aL(t,'custom:access is now "admin" — one API call to change your own privilege attribute','alrt');
-  toast('Attribute set to admin','error');await dly(1500);cogP(3);
+  toast('Attribute set to admin — ready to escalate','error');
 }
 
 async function cogExt(){const t='tc3';$(t).innerHTML='';
